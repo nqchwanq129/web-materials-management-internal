@@ -17,7 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute([$username]);
         $user = $stmt->fetch();
         
-        if ($user && $password === $user['password']) {
+        $storedPassword = $user['password'] ?? '';
+        $isHashed = password_get_info($storedPassword)['algoName'] !== 'unknown';
+        if ($user && ($isHashed ? password_verify($password, $storedPassword) : hash_equals($storedPassword, $password))) {
             // Đăng nhập thành công
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
@@ -49,4 +51,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 }
-?> 
+?>
