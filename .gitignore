@@ -1,0 +1,11 @@
+/.env
+/.env.*
+!/.env.example
+/vendor/
+/.idea/
+/.vscode/
+*.log
+/database/*
+!/database/schema.example.sql
+/public/uploads/imports/
+/public/uploads/invoices/

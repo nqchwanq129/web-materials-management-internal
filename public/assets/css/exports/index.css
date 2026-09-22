@@ -1,0 +1,272 @@
+/* CSS DS phiếu xuất kho - cải thiện giao diện đẹp mắt */
+
+/* Background trang */
+body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    min-height: 100vh;
+}
+
+.main-content h2 {
+    color: #2c3e50;
+    font-weight: 700;
+    margin-bottom: 30px;
+    font-size: 28px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Khối section nổi bật - cải thiện */
+.section { 
+    background: #fff; 
+    border-radius: 12px; 
+    margin-bottom: 24px; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.07); 
+    border: 1px solid #e1e8ed;
+    overflow: hidden; 
+}
+.section-header { 
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff; 
+    padding: 20px 24px; 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.section-header h3 { 
+    margin: 0; 
+    font-size: 18px; 
+    font-weight: 600; 
+    color: white;
+}
+.section-content { padding: 24px; }
+
+/* Form tìm kiếm - cải thiện */
+.search-form .search-row { 
+    display: flex; 
+    gap: 20px; 
+    align-items: flex-end; 
+}
+.search-form .search-group { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 8px; 
+    flex: 1;
+}
+.search-form label {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 14px;
+}
+.search-form input[type="text"] { 
+    padding: 12px 16px; 
+    border: 2px solid #e1e8ed; 
+    border-radius: 8px; 
+    width: 100%; 
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: #fafbfc;
+}
+.search-form input[type="text"]:focus {
+    outline: none;
+    border-color: #007bff;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+/* Button styles - cải thiện */
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: #fff;
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    color: #fff;
+}
+
+.btn-info:hover {
+    background: linear-gradient(135deg, #138496 0%, #117a8b 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 12px;
+}
+
+/* Bảng dữ liệu - cải thiện */
+.table-container { 
+    overflow-x: auto; 
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.import-bills-table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    background: #fff; 
+    border-radius: 8px; 
+    overflow: hidden; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+    table-layout: auto;
+}
+.import-bills-table th, .import-bills-table td { 
+    padding: 16px 12px; 
+    border-bottom: 1px solid #e1e8ed; 
+    font-size: 14px; 
+    word-wrap: break-word;
+    vertical-align: middle;
+}
+.import-bills-table th { 
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
+    text-align: left; 
+    font-weight: 600; 
+    color: #2c3e50; 
+    text-transform: none;
+    font-size: 13px;
+    letter-spacing: 0.2px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.import-bills-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.import-bills-table tbody tr:hover {
+    background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);
+    transform: scale(1.01);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.import-bills-table tbody tr:nth-child(even) {
+    background: #fafbfc;
+}
+
+.import-bills-table tbody tr:nth-child(even):hover {
+    background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);
+}
+
+/* Chiều rộng cột cân đối */
+/* Bỏ width cố định để tự căn */
+.import-bills-table th:nth-child(1), .import-bills-table td:nth-child(1) { width: auto; }
+.import-bills-table th:nth-child(2), .import-bills-table td:nth-child(2) { width: auto; }
+.import-bills-table th:nth-child(3), .import-bills-table td:nth-child(3) { width: auto; }
+.import-bills-table th:nth-child(4), .import-bills-table td:nth-child(4) { width: auto; }
+.import-bills-table th:nth-child(5), .import-bills-table td:nth-child(5) { width: auto; }
+.import-bills-table th:nth-child(6), .import-bills-table td:nth-child(6) { width: auto; }
+.import-bills-table th:nth-child(7), .import-bills-table td:nth-child(7) { width: auto; }
+
+/* Căn lề cho các cột - cải thiện */
+.import-bills-table .center { 
+    text-align: center; 
+    font-weight: 600;
+    color: #495057;
+}
+.import-bills-table th.center-header { text-align: center; }
+.import-bills-table .amount { 
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; 
+    font-weight: 600; 
+    text-align: right; 
+    color: #2c3e50;
+}
+.import-bills-table th.amount { text-align: center; }
+
+/* Action buttons */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.action-buttons .btn {
+    margin: 0;
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+/* No data - cải thiện */
+.no-data {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 60px 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 2px dashed #dee2e6;
+    font-size: 16px;
+}
+
+/* Responsive - cải thiện */
+@media (max-width: 768px) {
+    .search-form .search-row {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .import-bills-table th,
+    .import-bills-table td {
+        padding: 12px 8px;
+        font-size: 13px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .action-buttons .btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .import-bills-table th:nth-child(1), .import-bills-table td:nth-child(1) { width: 10%; }
+    .import-bills-table th:nth-child(2), .import-bills-table td:nth-child(2) { width: 25%; }
+    .import-bills-table th:nth-child(3), .import-bills-table td:nth-child(3) { width: 12%; }
+    .import-bills-table th:nth-child(4), .import-bills-table td:nth-child(4) { width: 25%; }
+    .import-bills-table th:nth-child(5), .import-bills-table td:nth-child(5) { width: 15%; }
+    .import-bills-table th:nth-child(6), .import-bills-table td:nth-child(6) { width: 25%; }
+    .import-bills-table th:nth-child(7), .import-bills-table td:nth-child(7) { width: 12%; }
+}
