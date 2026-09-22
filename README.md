@@ -25,7 +25,7 @@ Tên các tệp trong public/uploads/, bảng/cột cơ sở dữ liệu và mã
 
 1. Đặt toàn bộ thư mục qlvt-new trong htdocs, hoặc cấu hình Apache Alias/VirtualHost trỏ DocumentRoot tới qlvt-new/public.
 2. Nếu đặt trong htdocs, truy cập http://localhost/qlvt-new/public/.
-3. Dùng cơ sở dữ liệu `qlvt_db` hiện có. Nếu cần tạo mới, tạo database và nhập `database/schema.example.sql` bằng phpMyAdmin. File mẫu chỉ chứa cấu trúc bảng, không có dữ liệu hoặc tài khoản đăng nhập.
+3. Dùng cơ sở dữ liệu `qlvt` hiện có. Nếu cần tạo mới, tạo database và nhập `database/schema.example.sql` bằng phpMyAdmin. File mẫu chỉ chứa cấu trúc bảng, không có dữ liệu hoặc tài khoản đăng nhập.
 4. Sao chép `.env.example` thành `.env` và chỉnh `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` theo MySQL trên máy. `.env` đã được thêm vào `.gitignore`.
 5. Cho Apache quyền ghi vào public/uploads/.
 6. Nếu không sao chép vendor/, chạy composer install tại gốc dự án.
