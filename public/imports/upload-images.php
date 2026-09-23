@@ -18,6 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+require_once __DIR__ . '/../../app/helpers/csrf_helper.php';
+if (!is_string($_POST['csrf_token'] ?? null) || !validateCSRFToken($_POST['csrf_token'])) { http_response_code(403); echo json_encode(['success'=>false,'message'=>'Phiên xác nhận hết hạn. Vui lòng tải lại trang.']); exit; }
+
 $importBillId = isset($_POST['import_bill_id']) ? (int)$_POST['import_bill_id'] : 0;
 if ($importBillId <= 0) {
     echo json_encode(['success' => false, 'message' => 'Thiếu import_bill_id']);
@@ -45,10 +48,10 @@ $rowIndices = isset($_POST['row_indices']) ? $_POST['row_indices'] : [];
 
 // Lấy danh sách sản phẩm của hóa đơn này để map với row indices
 $stmt = $pdo->prepare("
-    SELECT p.id 
-    FROM products p 
-    INNER JOIN import_bill_details ibd ON p.id = ibd.product_id 
-    WHERE ibd.import_bill_id = ? 
+    SELECT p.id
+    FROM products p
+    INNER JOIN import_bill_details ibd ON p.id = ibd.product_id
+    WHERE ibd.import_bill_id = ?
     ORDER BY ibd.id ASC
 ");
 $stmt->execute([$importBillId]);
@@ -65,31 +68,34 @@ for ($i = 0; $i < count($images['name']); $i++) {
     if ($images['size'][$i] > $maxSize) {
         continue;
     }
-    
-    $fileName = 'img_' . time() . '_' . ($i + 1) . '.' . $ext;
+
+    if (!in_array((new finfo(FILEINFO_MIME_TYPE))->file($images['tmp_name'][$i]), ['image/jpeg','image/png','image/gif'], true)) continue;
+    $rowIndex = filter_var($rowIndices[$i] ?? null, FILTER_VALIDATE_INT);
+    if ($rowIndex === false || $rowIndex === null || !isset($productIds[$rowIndex])) continue;
+    $fileName = 'img_' . bin2hex(random_bytes(12)) . '.' . $ext;
     $filePath = $uploadDir . $fileName;
-    
+
     if (move_uploaded_file($images['tmp_name'][$i], $filePath)) {
         // Lưu vào database
         $rowIndex = isset($rowIndices[$i]) ? (int)$rowIndices[$i] : 0;
         $productId = isset($productIds[$rowIndex]) ? $productIds[$rowIndex] : null;
-        
+
         if ($productId) {
             // Đếm số ảnh hiện tại của sản phẩm để set position
             $stmt = $pdo->prepare("SELECT COUNT(*) as count FROM product_images WHERE product_id = ? AND import_bill_id = ?");
             $stmt->execute([$productId, $importBillId]);
             $position = $stmt->fetch()['count'] + 1;
-            
+
             // Lưu vào bảng product_images
             $stmt = $pdo->prepare("INSERT INTO product_images (product_id, file_path, position, import_bill_id) VALUES (?, ?, ?, ?)");
             $stmt->execute([$productId, $filePath, $position, $importBillId]);
         }
-        
+
         $saved++;
     }
 }
 
-echo json_encode(['success' => true, 'message' => 'Đã upload ' . $saved . ' ảnh']);
+echo json_encode(['success' => $saved === count($images['name']), 'message' => 'Đã lưu ' . $saved . '/' . count($images['name']) . ' ảnh. Ảnh cần là JPG, PNG hoặc GIF, tối đa 5 MB mỗi tệp.']);
 ?>
 
 

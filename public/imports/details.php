@@ -1,17 +1,17 @@
 <?php
 chdir(dirname(__DIR__));
 session_start();
-require_once __DIR__ . '/../../app/config/database.php';
 require_once __DIR__ . '/../../app/helpers/money_parse.php';
 require_once __DIR__ . '/../../app/helpers/csrf_helper.php';
 
-if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['role'] !== 'Thủ kho')) {
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['Admin', 'Thủ kho'], true)) {
     header('Location: ../auth/sign-in.php');
     exit;
 }
 
+require_once __DIR__ . '/../../app/config/database.php';
 // Lấy ID hóa đơn từ URL
-$billId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+$billId = filter_var($_GET['id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 
 if (!$billId) {
     header('Location: ../imports/index.php');
@@ -28,283 +28,7 @@ if (!$importBill) {
     exit;
 }
 
-// Xử lý lưu hóa đơn
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'save') {
-    requireCSRFToken(); // Validate CSRF token
-    try {
-        $pdo->beginTransaction();
-        
-        // Cập nhật thông tin hóa đơn
-        $stmt = $pdo->prepare("UPDATE import_bill SET 
-            nha_cung_cap = ?, 
-            nguoi_nhan_hang = ?,
-            nhap_vao_don_vi = ?, 
-            ngay_nhap = ?, 
-            so_hoa_don = ?, 
-            serial = ?, 
-            tong_tien = ?
-            WHERE id = ?");
-        
-        // Xử lý so_hoa_don để tránh duplicate empty string
-        $soHoaDon = trim($_POST['invoice-number'] ?? '');
-        
-        if (empty($soHoaDon)) {
-            $soHoaDon = 'HD' . date('Ymd') . '_' . $billId; // Tạo số hóa đơn tự động nếu rỗng
-        }
-        
-        try {
-            $stmt->execute([
-                $_POST['supplier'] ?? '',
-                $_POST['receiver-name'] ?? '',
-                $_POST['import-unit'] ?? '',
-                $_POST['import-date'] ?? '',
-                $soHoaDon,
-                $_POST['serial'] ?? '',
-                round(parseMoneyStringToFloat($_POST['total-amount'] ?? '0'), 3),
-                $billId
-            ]);
-        } catch (PDOException $e) {
-            if ($e->getCode() == 23000) { // Duplicate key error
-                $soHoaDon = 'HD' . date('YmdHis') . '_' . $billId; // Tạo số hóa đơn unique
-                $stmt->execute([
-                    $_POST['supplier'] ?? '',
-                    $_POST['receiver-name'] ?? '',
-                    $_POST['import-unit'] ?? '',
-                    $_POST['import-date'] ?? '',
-                    $soHoaDon,
-                    $_POST['serial'] ?? '',
-                    round(parseMoneyStringToFloat($_POST['total-amount'] ?? '0'), 3),
-                    $billId
-                ]);
-            } else {
-                throw $e; // Re-throw nếu không phải lỗi duplicate
-            }
-        }
-        
-        // Cập nhật thông tin hàng hóa nếu có
-        if (isset($_POST['products']) && is_array($_POST['products'])) {
-            $totalAmount = 0;
-            
-            foreach ($_POST['products'] as $productId => $productData) {
-                // Tính lại thành tiền dựa trên số lượng và đơn giá
-                $soLuong = (int)($productData['so_luong_nhap'] ?? 0);
-                $donGia = round(parseMoneyStringToFloat($productData['don_gia'] ?? '0'), 3);
-                $thanhTien = round($soLuong * $donGia, 3);
-                
-                // Xử lý upload ảnh sản phẩm nếu có
-                $anhSanPham = null;
-                if (isset($_FILES['products'][$productId]['image']) && $_FILES['products'][$productId]['image']['error'] === UPLOAD_ERR_OK) {
-                    $imageFile = $_FILES['products'][$productId]['image'];
-                    
-                    // Kiểm tra loại file
-                    $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-                    if (in_array($imageFile['type'], $allowedTypes)) {
-                        // Tạo thư mục upload cho sản phẩm cụ thể
-                        $uploadDir = 'uploads/products/' . $productId . '/';
-                        if (!is_dir($uploadDir)) {
-                            mkdir($uploadDir, 0755, true);
-                        }
-                        
-                        // Tạo tên file duy nhất theo cấu trúc database
-                        $fileExtension = pathinfo($imageFile['name'], PATHINFO_EXTENSION);
-                        $fileName = $productId . '_' . time() . '_1.' . $fileExtension;
-                        $filePath = $uploadDir . $fileName;
-                        
-                        // Di chuyển file
-                        if (move_uploaded_file($imageFile['tmp_name'], $filePath)) {
-                            $anhSanPham = $filePath;
-                        }
-                    }
-                }
-                
-                // Cập nhật thông tin sản phẩm
-                if ($anhSanPham) {
-                    $stmt = $pdo->prepare("UPDATE products SET 
-                        ten_san_pham = ?, 
-                        loai = ?, 
-                        don_vi = ?, 
-                        ghi_chu = ?, 
-                        serial = ?,
-                        so_luong_nhap = ?,
-                        don_gia = ?,
-                        thanh_tien = ?,
-                        image_path = ?
-                        WHERE id = ?");
-                    
-                    $updateData = [
-                        $productData['ten_san_pham'] ?? '',
-                        $productData['loai'] ?? '',
-                        $productData['don_vi'] ?? '',
-                        $productData['ghi_chu'] ?? '',
-                        $productData['serial'] ?? '',
-                        $soLuong,
-                        $donGia,
-                        $thanhTien,
-                        $anhSanPham,
-                        $productId
-                    ];
-                } else {
-                    $stmt = $pdo->prepare("UPDATE products SET 
-                        ten_san_pham = ?, 
-                        loai = ?, 
-                        don_vi = ?, 
-                        ghi_chu = ?, 
-                        serial = ?,
-                        so_luong_nhap = ?,
-                        don_gia = ?,
-                        thanh_tien = ?
-                        WHERE id = ?");
-                    
-                    $updateData = [
-                        $productData['ten_san_pham'] ?? '',
-                        $productData['loai'] ?? '',
-                        $productData['don_vi'] ?? '',
-                        $productData['ghi_chu'] ?? '',
-                        $productData['serial'] ?? '',
-                        $soLuong,
-                        $donGia,
-                        $thanhTien,
-                        $productId
-                    ];
-                }
-                
-                $stmt->execute($updateData);
-                
-                // Cập nhật chi tiết nhập kho
-                $stmt = $pdo->prepare("UPDATE import_bill_details SET 
-                    so_luong_nhap = ?, 
-                    don_gia = ?, 
-                    thanh_tien = ?
-                    WHERE product_id = ? AND import_bill_id = ?");
-                
-                $stmt->execute([
-                    $soLuong,
-                    $donGia,
-                    $thanhTien,
-                    $productId,
-                    $billId
-                ]);
-                
-                // Tính số lượng còn lại = số lượng nhập - số lượng đã xuất
-                $stmt = $pdo->prepare("SELECT COALESCE(SUM(so_luong_xuat), 0) as tong_xuat FROM export_bill_details WHERE product_id = ?");
-                $stmt->execute([$productId]);
-                $tongXuat = $stmt->fetch()['tong_xuat'] ?? 0;
-                $soLuongConLai = $soLuong - $tongXuat;
-                
-                // Cập nhật số lượng còn lại
-                $stmt = $pdo->prepare("UPDATE products SET so_luong_con_lai = ? WHERE id = ?");
-                $stmt->execute([$soLuongConLai, $productId]);
-                
-                // Cộng dồn tổng tiền
-                $totalAmount += $thanhTien;
-            }
-            
-            // Cập nhật lại tổng tiền của hóa đơn
-            $stmt = $pdo->prepare("UPDATE import_bill SET tong_tien = ? WHERE id = ?");
-            $stmt->execute([$totalAmount, $billId]);
-        }
-        
-        $pdo->commit();
-        $success_message = 'Đã cập nhật thông tin hóa đơn và hàng hóa thành công!';
-        
-    } catch (Exception $e) {
-        $pdo->rollBack();
-        $error_message = 'Lỗi khi cập nhật hóa đơn: ' . $e->getMessage();
-    }
-}
-
-// Xử lý xóa hóa đơn
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'delete') {
-    try {
-        $pdo->beginTransaction();
-
-        // Lấy thông tin hóa đơn để xóa file PDF nếu có
-        $stmt = $pdo->prepare('SELECT pdf_path FROM import_bill WHERE id = ?');
-        $stmt->execute([$billId]);
-        $billInfo = $stmt->fetch();
-        
-        // Xóa file PDF nếu có
-        if ($billInfo && !empty($billInfo['pdf_path'])) {
-            $pdfPath = dirname(__DIR__) . DIRECTORY_SEPARATOR . $billInfo['pdf_path'];
-            if (file_exists($pdfPath)) {
-                @unlink($pdfPath);
-            }
-        }
-
-        // Lấy danh sách product_id gắn với hóa đơn này
-        $stmt = $pdo->prepare('SELECT product_id FROM import_bill_details WHERE import_bill_id = ?');
-        $stmt->execute([$billId]);
-        $productIds = array_column($stmt->fetchAll(), 'product_id');
-
-        // Nếu có sản phẩm, kiểm tra xem đã được xuất chưa
-        if (!empty($productIds)) {
-            $placeholders = implode(',', array_fill(0, count($productIds), '?'));
-
-            // Kiểm tra tồn tại trong export_bill_details
-            $checkSql = "SELECT COUNT(*) AS cnt FROM export_bill_details WHERE product_id IN ($placeholders)";
-            $checkStmt = $pdo->prepare($checkSql);
-            $checkStmt->execute($productIds);
-            $exportCount = (int)$checkStmt->fetch()['cnt'];
-
-            if ($exportCount > 0) {
-                $pdo->rollBack();
-                $error_message = 'Không thể xóa hóa đơn vì có sản phẩm trong hóa đơn này đã được xuất. Vui lòng thu hồi các phiếu xuất liên quan hoặc xóa thủ công trước.';
-            } else {
-                // Xóa chi tiết hóa đơn
-                $stmt = $pdo->prepare('DELETE FROM import_bill_details WHERE import_bill_id = ?');
-                $stmt->execute([$billId]);
-
-                // Xóa ảnh + thư mục ảnh từng sản phẩm
-                foreach ($productIds as $pid) {
-                    // Xóa thư mục uploads/products/{id} và tất cả file trong đó
-                    $dir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'products' . DIRECTORY_SEPARATOR . $pid;
-                    if (is_dir($dir)) {
-                        $files = glob($dir . DIRECTORY_SEPARATOR . '*');
-                        if ($files) { 
-                            foreach ($files as $f) { 
-                                if (is_file($f)) {
-                                    @unlink($f); 
-                                }
-                            } 
-                        }
-                        @rmdir($dir);
-                    }
-                    
-                    // Xóa bản ghi product_images
-                    $stmt = $pdo->prepare('DELETE FROM product_images WHERE product_id = ?');
-                    $stmt->execute([$pid]);
-                }
-
-                // Xóa các sản phẩm được tạo từ hóa đơn này
-                $delSql = "DELETE FROM products WHERE id IN ($placeholders)";
-                $delStmt = $pdo->prepare($delSql);
-                $delStmt->execute($productIds);
-
-                // Xóa hóa đơn
-                $stmt = $pdo->prepare('DELETE FROM import_bill WHERE id = ?');
-                $stmt->execute([$billId]);
-
-                $pdo->commit();
-                header('Location: ../imports/index.php?deleted=1');
-                exit;
-            }
-        } else {
-            // Không có sản phẩm gắn với hóa đơn -> chỉ xóa chi tiết và hóa đơn
-            $stmt = $pdo->prepare('DELETE FROM import_bill_details WHERE import_bill_id = ?');
-            $stmt->execute([$billId]);
-
-            $stmt = $pdo->prepare('DELETE FROM import_bill WHERE id = ?');
-            $stmt->execute([$billId]);
-
-            $pdo->commit();
-            header('Location: ../imports/index.php?deleted=1');
-            exit;
-        }
-    } catch (Exception $e) {
-        $pdo->rollBack();
-        $error_message = 'Lỗi khi xóa hóa đơn: ' . $e->getMessage();
-    }
-}
+require __DIR__ . '/../../app/helpers/import_bill_actions.php';
 
 // Lấy danh sách hàng hóa của hóa đơn này
 $stmt = $pdo->prepare("
@@ -320,8 +44,8 @@ $products = $stmt->fetchAll();
 // Lấy ảnh cho từng sản phẩm từ bảng product_images
 foreach ($products as &$product) {
     $stmt = $pdo->prepare("
-        SELECT file_path, position 
-        FROM product_images 
+        SELECT file_path, position
+        FROM product_images
         WHERE product_id = ?
         ORDER BY position ASC
     ");
@@ -330,6 +54,9 @@ foreach ($products as &$product) {
 }
 // Quan trọng: hủy tham chiếu để tránh làm hỏng dữ liệu khi foreach lần 2
 unset($product);
+function importEsc($value): string { return htmlspecialchars((string) ($value ?? ''), ENT_QUOTES, 'UTF-8'); }
+$home = $_SESSION['role'] === 'Admin' ? 'dashboard/admin.php' : 'dashboard/warehouse.php';
+$name = $_SESSION['full_name'] ?? $_SESSION['username'] ?? 'Người dùng';
 ?>
 
 <!DOCTYPE html>
@@ -339,146 +66,116 @@ unset($product);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chi tiết phiếu nhập kho - Admin</title>
-    <link rel="stylesheet" href="assets/css/shared/layout.css">
+    <link rel="stylesheet" href="assets/css/dashboard/admin.css">
     <link rel="stylesheet" href="assets/css/imports/details.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
 </head>
 <body>
-    <button class="sidebar-toggle" id="sidebarToggle">☰</button>
-    <div class="header">
-        <div class="logo">
-            <img src="assets/images/company-logo.png" alt="Vishipel Logo">
-            <div class="logo-text">
-                <h1>PHẦN MỀM QUẢN LÝ KHO VISHIPEL</h1>
-                <p>CÔNG TY TNHH MTV THÔNG TIN ĐIỆN TỬ HÀNG HẢI VIỆT NAM</p>
-            </div>
-        </div>
-        <div class="user-info">
-            <span class="greeting">Xin chào <?php echo htmlspecialchars($_SESSION['full_name']); ?></span>
-            <a href="auth/log-out.php" class="logout-btn">Đăng xuất</a>
-        </div>
-    </div>
-
-    <div class="container">
-        <div class="sidebar">
-            <ul class="menu">
-                <li><a href="reports/statistics.php">Số liệu thống kê</a></li>
-                <?php if ($_SESSION['role'] === 'Admin'): ?>
-                <li><a href="accounts/index.php">Quản lý tài khoản</a></li>
-                <?php endif; ?>
-                <li class="active">Nhập hàng hóa
-                    <ul>
-                        <li><a href="imports/create.php">Nhập hóa đơn</a></li>
-                        <li class="active"><a href="imports/index.php">DS phiếu nhập kho</a></li>
-                    </ul>
-                </li>
-                <li>Xuất hàng hóa
-                    <ul>
-                        <li><a href="exports/create.php">Xuất hóa đơn</a></li>
-                        <li><a href="exports/index.php">DS phiếu xuất kho</a></li>
-                    </ul>
-                </li>
-                <li>Danh Sách Hàng Hóa
-                    <ul>
-                        <li><a href="products/index.php">Tất Cả Hàng Hóa</a></li>
-                        <li><a href="products/index.php?type=cong-cu">Công Cụ Dụng Cụ</a></li>
-                        <li><a href="products/index.php?type=vat-tu">Vật Tư</a></li>
-                        <li><a href="products/index.php?type=tai-san">Tài Sản Cố Định</a></li>
-                        <li><a href="products/index.php?type=phu-tung">Phụ Tùng Thay Thế</a></li>
-                        <li><a href="products/index.php?type=khac">Khác</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-        
-        <div class="main-content">
-            <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
-                <h2>Chi Tiết Phiếu Nhập Kho</h2>
-                <div>
-                    <a href="imports/export-excel.php?id=<?php echo htmlspecialchars($billId); ?>" class="btn btn-success">📊 Xuất Excel</a>
-                </div>
-            </div>
-            
+<div class="dashboard">
+    <aside class="sidebar" id="dashboard-sidebar">
+        <a class="brand" href="<?= $home ?>"><span class="brand-mark">V</span><span>VISHIPEL</span></a>
+        <div class="nav-label">TỔNG QUAN</div>
+        <nav class="nav" aria-label="Điều hướng chính">
+            <a href="<?= $home ?>"><span aria-hidden="true">▦</span>Bảng điều khiển</a>
+            <a href="reports/statistics.php"><span aria-hidden="true">▥</span>Thống kê</a>
+            <div class="nav-label">QUẢN LÝ KHO</div>
+            <a href="products/index.php"><span aria-hidden="true">◫</span>Hàng hóa</a>
+            <a class="active" aria-current="page" href="imports/index.php"><span aria-hidden="true">↙</span>Phiếu nhập kho</a>
+            <a href="imports/create.php"><span aria-hidden="true">＋</span>Tạo phiếu nhập</a>
+            <a href="exports/index.php"><span aria-hidden="true">↗</span>Phiếu xuất kho</a>
+            <a href="exports/create.php"><span aria-hidden="true">＋</span>Tạo phiếu xuất</a>
+            <?php if ($_SESSION['role'] === 'Admin'): ?><div class="nav-label">HỆ THỐNG</div><a href="accounts/index.php"><span aria-hidden="true">♙</span>Tài khoản</a><?php endif; ?>
+        </nav>
+        <div class="sidebar-user"><span class="avatar" aria-hidden="true">V</span><span><strong><?= importEsc($name) ?></strong><small><?= importEsc($_SESSION['role']) ?></small></span><a href="auth/log-out.php" aria-label="Đăng xuất" title="Đăng xuất">⇥</a></div>
+    </aside>
+    <div class="content-shell">
+        <header class="topbar"><div class="topbar-left"><button class="menu-toggle" type="button" aria-controls="dashboard-sidebar" aria-expanded="false" aria-label="Mở menu">☰</button><div><span class="breadcrumb">Phiếu nhập kho / Chi tiết</span><h1>Chi tiết phiếu nhập kho</h1></div></div><div class="topbar-actions"><span><?= date('d/m/Y') ?></span><span class="top-avatar" aria-hidden="true">V</span></div></header>
+        <main class="main-content">
+            <a class="back-link" href="imports/index.php">← Danh sách phiếu nhập kho</a>
+            <div class="page-intro"><div><span class="eyebrow">CHI TIẾT PHIẾU NHẬP</span><h2>Hóa đơn <?= importEsc($importBill['so_hoa_don']) ?></h2><p>Kiểm tra thông tin, hàng hóa và chứng từ của phiếu nhập.</p></div><a href="imports/export-excel.php?id=<?= (int) $billId ?>" class="btn btn-success">Xuất Excel</a></div>
+            <div class="receipt-summary"><div><span>Ngày nhập</span><strong><?= date('d/m/Y', strtotime($importBill['ngay_nhap'])) ?></strong></div><div><span>Số mặt hàng</span><strong><?= count($products) ?></strong></div><div><span>Tổng tiền đã lưu (VNĐ)</span><strong><?= importEsc(formatVnAmount($importBill['tong_tien'])) ?></strong></div></div>
+            <nav class="section-links" aria-label="Các phần của phiếu"><a href="imports/details.php?id=<?= (int) $billId ?>#invoice-info">Thông tin phiếu</a><a href="imports/details.php?id=<?= (int) $billId ?>#goods">Hàng hóa</a><a href="imports/details.php?id=<?= (int) $billId ?>#documents">Chứng từ PDF</a></nav>
+            <noscript><p class="notice">Bạn có thể lưu thông tin phiếu và hàng hóa. Vui lòng bật JavaScript để tải ảnh, PDF và xem trước tệp.</p></noscript>
+            <div id="save-notice" role="status" aria-live="polite"></div>
             <?php if (isset($success_message)): ?>
                 <div class="alert alert-success" style="background: #d4edda; color: #155724; padding: 12px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
                     ✅ <?php echo htmlspecialchars($success_message); ?>
                 </div>
             <?php endif; ?>
-            
+
             <?php if (isset($error_message)): ?>
                 <div class="alert alert-danger" style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
                     ❌ <?php echo htmlspecialchars($error_message); ?>
                 </div>
             <?php endif; ?>
-            
-            <!-- Phần Thông Tin Hóa Đơn -->
-            <div class="section">
+
+<div class="receipt-overview">            <!-- Phần Thông Tin Hóa Đơn -->
+            <div class="section" id="invoice-info">
                 <div class="section-header">
-                    <h3>HĐ nhập số <?php echo htmlspecialchars($importBill['so_hoa_don'] ?? ''); ?></h3>
+                    <h3>Thông tin phiếu nhập</h3><p>Nhà cung cấp, nơi nhận và thông tin hóa đơn.</p>
                 </div>
                 <div class="section-content">
-                    <form class="invoice-form" method="POST">
-                        <input type="hidden" name="action" value="save">
+                    <div class="invoice-form">
                         <div class="form-row">
                             <div class="form-column">
                                 <div class="form-group">
                                     <label for="supplier">Nhà Cung Cấp:</label>
-                                    <input type="text" id="supplier" name="supplier" 
+                                    <input form="save-form" type="text" id="supplier" name="supplier"
                                            value="<?php echo htmlspecialchars($importBill['nha_cung_cap'] ?? ''); ?>" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="import-unit">Nhập vào kho:</label>
-                                    <input type="text" id="import-unit" name="import-unit" 
+                                    <input form="save-form" type="text" id="import-unit" name="import-unit"
                                            value="<?php echo htmlspecialchars($importBill['nhap_vao_don_vi'] ?? ''); ?>" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="import-date">Ngày Nhập:</label>
                                     <div class="date-input-container">
-                                        <input type="text" id="import-date" name="import-date" class="date-picker" placeholder="dd/mm/yyyy"
+                                        <input form="save-form" type="date" id="import-date" name="import-date" class="date-picker" placeholder="dd/mm/yyyy"
                                                value="<?php echo date('Y-m-d', strtotime($importBill['ngay_nhap'] ?? date('Y-m-d'))); ?>" required>
-                                        <span class="calendar-icon">📅</span>
+
                                     </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="invoice-number">Số Hóa Đơn:</label>
-                                    <input type="text" id="invoice-number" name="invoice-number" 
+                                    <input form="save-form" type="text" id="invoice-number" name="invoice-number"
                                            value="<?php echo htmlspecialchars($importBill['so_hoa_don'] ?? ''); ?>" required>
                                 </div>
                             </div>
                             <div class="form-column">
                                 <div class="form-group">
                                     <label for="receiver-name">Họ và tên người nhập hàng:</label>
-                                    <input type="text" id="receiver-name" name="receiver-name" 
-                                           value="<?php echo htmlspecialchars($importBill['nguoi_nhan_hang'] ?? 'Dương Mạnh Tuấn'); ?>" 
+                                    <input form="save-form" type="text" id="receiver-name" name="receiver-name"
+                                           value="<?php echo htmlspecialchars($importBill['nguoi_nhan_hang'] ?? ''); ?>"
                                            placeholder="Nhập họ tên người nhập hàng">
                                 </div>
                                 <div class="form-group">
                                     <label for="serial">Số Serial:</label>
-                                    <input type="text" id="serial" name="serial" 
+                                    <input form="save-form" type="text" id="serial" name="serial"
                                            value="<?php echo htmlspecialchars($importBill['serial'] ?? ''); ?>">
                                 </div>
                                 <div class="form-group">
                                     <label for="total-amount">Tổng Tiền (VNĐ):</label>
-                                    <input type="text" id="total-amount" name="total-amount" 
+                                    <input form="save-form" type="text" id="total-amount" name="total-amount"
                                            value="<?php echo htmlspecialchars(formatVnAmount($importBill['tong_tien'] ?? 0)); ?>" required>
                                 </div>
                             </div>
                         </div>
-                        
-                    </form>
+
+                    </div>
                 </div>
             </div>
 
             <!-- Phần Hóa Đơn PDF -->
-            <div class="section">
+            <div class="section" id="documents">
                 <div class="section-header">
                     <h3>Hóa Đơn PDF</h3>
                 </div>
                 <div class="section-content">
-                    <?php 
+                    <?php
                     // Ưu tiên đường dẫn PDF trong database; chỉ hiển thị nếu có lưu đường dẫn
                     $pdf_file_path = isset($importBill['pdf_path']) ? $importBill['pdf_path'] : null;
-                    $pdf_exists = $pdf_file_path && file_exists($pdf_file_path);
+                    $pdf_exists = is_string($pdf_file_path) && preg_match('~^uploads/invoices/[a-zA-Z0-9_.-]+\.pdf$~D', $pdf_file_path) && is_file($pdf_file_path);
                     ?>
                     <!-- Form upload PDF mới - luôn hiển thị để có thể thay thế PDF cũ -->
                     <div class="pdf-upload-section" style="margin-bottom: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 2px dashed #dee2e6;">
@@ -497,15 +194,15 @@ unset($product);
                     </div>
 
                     <?php if ($pdf_exists): ?>
-                        <div class="pdf-info">
-                            <iframe src="<?php echo htmlspecialchars($pdf_file_path); ?>?t=<?php echo time(); ?>" 
+                        <details class="pdf-info"><summary>Xem hóa đơn PDF đã lưu</summary>
+                            <iframe src="<?php echo htmlspecialchars($pdf_file_path); ?>?t=<?php echo time(); ?>"
                                     style="width:100%; height:600px; border:1px solid #e0e0e0; border-radius:6px;"
                                     title="Hóa đơn PDF"></iframe>
                             <div style="margin-top:12px; text-align:right; display:flex; justify-content:flex-end; gap:10px;">
                                 <a class="btn btn-secondary" download="hoa_don_<?php echo htmlspecialchars($importBill['so_hoa_don'] ?? ''); ?>.pdf" href="<?php echo htmlspecialchars($pdf_file_path); ?>?t=<?php echo time(); ?>">Tải xuống PDF</a>
-                                <a class="btn btn-primary" target="_blank" href="<?php echo htmlspecialchars($pdf_file_path); ?>?t=<?php echo time(); ?>">Mở PDF trong tab mới</a>
+                                <a class="btn btn-primary" target="_blank" rel="noopener" href="<?php echo htmlspecialchars($pdf_file_path); ?>?t=<?php echo time(); ?>">Mở PDF trong tab mới</a>
                             </div>
-                        </div>
+                        </details>
                     <?php else: ?>
                         <div class="pdf-placeholder">
                             <i class="fas fa-file-pdf"></i>
@@ -515,10 +212,10 @@ unset($product);
                 </div>
             </div>
 
-            <!-- Phần Danh Sách Hàng Hóa -->
-            <div class="section">
+</div>            <!-- Phần Danh Sách Hàng Hóa -->
+            <div class="section" id="goods">
                 <div class="section-header">
-                    <h3>Danh Sách Hàng Hóa</h3>
+                    <h3>Hàng hóa trong phiếu <span class="count-badge"><?= count($products) ?></span></h3><p>Kiểm tra số lượng và giá từng mặt hàng. Mở phần bổ sung khi cần ghi chú hoặc thêm ảnh.</p>
                 </div>
                 <div class="section-content">
                     <?php if (empty($products)): ?>
@@ -526,57 +223,40 @@ unset($product);
                             <p>Không có hàng hóa nào trong hóa đơn này</p>
                         </div>
                     <?php else: ?>
-                        <div class="table-container">
-                            <table class="goods-table">
-                                <thead>
-                                    <tr>
-                                        <th>Hàng Hóa</th>
-                                        <th>Nhóm hàng</th>
-                                        <th>Đơn vị tính</th>
-                                        <th>Số Lượng</th>
-                                        <th>Giá Trước Thuế (VNĐ)</th>
-                                        <th>VAT (%)</th>
-                                        <th>Giá Sau Thuế (VNĐ)</th>
-                                        <th>Tổng Giá Trước Thuế (VNĐ)</th>
-                                        <th>Tổng Giá Sau Thuế (VNĐ)</th>
-                                        <th>Ghi chú</th>
-                                        <th>Serial</th>
-                                        <th>Ảnh</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($products as $product): ?>
-                                        <tr>
-                                            <td>
-                                                <input type="text" name="products[<?php echo $product['id']; ?>][ten_san_pham]" 
-                                                       value="<?php echo htmlspecialchars($product['ten_san_pham']); ?>" 
+                        <div class="goods-container">
+                            <div class="goods-cards">
+                                    <?php foreach ($products as $productIndex => $product): ?>
+                                        <article class="goods-card"><div class="goods-card-heading"><span class="item-index"><?= $productIndex + 1 ?></span><h4><?= importEsc($product['ten_san_pham']) ?></h4><a href="products/details.php?id=<?= (int) $product['id'] ?>">Xem hàng hóa ↗</a></div><div class="goods-fields">
+                                            <div class="goods-field "><label class="field-label">Hàng hóa</label>
+<input form="save-form" type="text" name="products[<?php echo $product['id']; ?>][ten_san_pham]"
+                                                       value="<?php echo htmlspecialchars($product['ten_san_pham']); ?>"
                                                        class="form-input" required>
-                                            </td>
-                                            <td>
-                                                <select name="products[<?php echo $product['id']; ?>][loai]" class="form-input" required>
+                                            </div>
+                                            <div class="goods-field "><label class="field-label">Nhóm hàng</label>
+<select form="save-form" name="products[<?php echo $product['id']; ?>][loai]" class="form-input" required>
                                                     <option value="Công cụ dụng cụ" <?php echo $product['loai'] === 'Công cụ dụng cụ' ? 'selected' : ''; ?>>Công cụ dụng cụ</option>
                                                     <option value="Vật tư" <?php echo $product['loai'] === 'Vật tư' ? 'selected' : ''; ?>>Vật tư</option>
                                                     <option value="Tài sản cố định" <?php echo $product['loai'] === 'Tài sản cố định' ? 'selected' : ''; ?>>Tài sản cố định</option>
                                                     <option value="Phụ tùng thay thế" <?php echo $product['loai'] === 'Phụ tùng thay thế' ? 'selected' : ''; ?>>Phụ tùng thay thế</option>
                                                     <option value="Khác" <?php echo $product['loai'] === 'Khác' ? 'selected' : ''; ?>>Khác</option>
                                                 </select>
-                                            </td>
-                                            <td>
-                                                <input type="text" name="products[<?php echo $product['id']; ?>][don_vi]" 
-                                                       value="<?php echo htmlspecialchars($product['don_vi']); ?>" 
+                                            </div>
+                                            <div class="goods-field "><label class="field-label">Đơn vị tính</label>
+<input form="save-form" type="text" name="products[<?php echo $product['id']; ?>][don_vi]"
+                                                       value="<?php echo htmlspecialchars($product['don_vi']); ?>"
                                                        class="form-input" required>
-                                            </td>
-                                            <td>
-                                                <input type="number" name="products[<?php echo $product['id']; ?>][so_luong_nhap]" 
-                                                       value="<?php echo $product['so_luong_nhap']; ?>" 
+                                            </div>
+                                            <div class="goods-field "><label class="field-label">Số lượng</label>
+<input form="save-form" type="number" name="products[<?php echo $product['id']; ?>][so_luong_nhap]"
+                                                       value="<?php echo $product['so_luong_nhap']; ?>"
                                                        class="form-input center" min="1" required>
-                                            </td>
-                                            <td>
-                                                <input type="text" name="products[<?php echo $product['id']; ?>][don_gia]" 
-                                                       value="<?php echo htmlspecialchars(formatVnAmount($product['don_gia'])); ?>" 
+                                            </div>
+                                            <div class="goods-field "><label class="field-label">Giá trước thuế (VNĐ)</label>
+<input form="save-form" type="text" name="products[<?php echo $product['id']; ?>][don_gia]"
+                                                       value="<?php echo htmlspecialchars(formatVnAmount($product['don_gia'])); ?>"
                                                        class="form-input amount" required>
-                                            </td>
-                                            <?php 
+                                            </div>
+                                            <?php
                                                 // Suy ra VAT% từ dữ liệu: dùng tổng tiền sau thuế ở chi tiết (ibd.thanh_tien)
                                                 $soLuong = max(1, (int)$product['so_luong_nhap']);
                                                 $donGiaTruocThue = (float)$product['don_gia'];
@@ -586,28 +266,28 @@ unset($product);
                                                     ? max(0, (int)round(($donGiaSauThue / $donGiaTruocThue - 1) * 100))
                                                     : 0;
                                             ?>
-                                            <td>
-                                                <input type="text" name="products[<?php echo $product['id']; ?>][vat]" 
-                                                       value="<?php echo $vatPercentInferred; ?>" 
+                                            <div class="goods-field "><label class="field-label">VAT (%)</label>
+<input form="save-form" type="text" name="products[<?php echo $product['id']; ?>][vat]"
+                                                       value="<?php echo $vatPercentInferred; ?>"
                                                        class="form-input center" required>
-                                            </td>
-                                            <td class="amount"><?php echo htmlspecialchars(formatVnAmount($donGiaSauThue)); ?></td>
-                                            <td class="amount"><?php echo htmlspecialchars(formatVnAmount($soLuong * $donGiaTruocThue)); ?></td>
-                                            <td class="amount"><?php echo htmlspecialchars(formatVnAmount($tongSauThue)); ?></td>
-                                            <td>
-                                                <input type="text" name="products[<?php echo $product['id']; ?>][ghi_chu]" 
-                                                       value="<?php echo htmlspecialchars($product['ghi_chu'] ?? ''); ?>" 
+                                            </div>
+                                            <div class="goods-field amount"><label>Giá sau thuế (VNĐ)</label><output data-value="unit-after"><?php echo htmlspecialchars(formatVnAmount($donGiaSauThue)); ?></output></div>
+                                            <div class="goods-field amount"><label>Tổng trước thuế (VNĐ)</label><output data-value="total-before"><?php echo htmlspecialchars(formatVnAmount($soLuong * $donGiaTruocThue)); ?></output></div>
+                                            <div class="goods-field amount"><label>Tổng sau thuế (VNĐ)</label><output data-value="total-after"><?php echo htmlspecialchars(formatVnAmount($tongSauThue)); ?></output></div>
+                                            </div><details class="item-extras"><summary>Ghi chú, serial & ảnh sản phẩm <span><?= count($product['images']) ?> ảnh</span></summary><div class="extras-grid"><div class="goods-field "><label class="field-label">Ghi chú</label>
+<input form="save-form" type="text" name="products[<?php echo $product['id']; ?>][ghi_chu]"
+                                                       value="<?php echo htmlspecialchars($product['ghi_chu'] ?? ''); ?>"
                                                        class="form-input">
-                                            </td>
-                                            <td>
-                                                <input type="text" name="products[<?php echo $product['id']; ?>][serial]" 
-                                                       value="<?php echo htmlspecialchars($product['serial'] ?? ''); ?>" 
+                                            </div>
+                                            <div class="goods-field "><label class="field-label">Serial</label>
+<input form="save-form" type="text" name="products[<?php echo $product['id']; ?>][serial]"
+                                                       value="<?php echo htmlspecialchars($product['serial'] ?? ''); ?>"
                                                        class="form-input">
-                                            </td>
-                                            <td>
+                                            </div>
+                                            <div class="goods-field "><label>Ảnh</label>
                                                 <div class="image-upload-container">
-                                                    <input type="file" name="products[<?php echo $product['id']; ?>][image]" 
-                                                           accept="image/*" class="image-upload-input" 
+                                                    <input form="save-form" type="file" name="products[<?php echo $product['id']; ?>][image]"
+                                                           accept="image/*" class="image-upload-input"
                                                            multiple
                                                            onchange="uploadProductImages(<?php echo $product['id']; ?>, this)"
                                                            title="Chọn một hoặc nhiều ảnh">
@@ -624,40 +304,37 @@ unset($product);
                                                         </span>
                                                     </div>
                                                 </div>
-                                            </td>
-                                        </tr>
+                                            </div>
+                                        </div></details></article>
                                     <?php endforeach; ?>
-                                </tbody>
-                            </table>
+
+                            </div>
                         </div>
                     <?php endif; ?>
                 </div>
             </div>
 
             <!-- Nút Lưu và Xóa Hóa Đơn -->
-            <div class="action-section">
-                <form id="save-form" method="POST" enctype="multipart/form-data" style="display: inline-block; margin-right: 15px;" onsubmit="return confirm('Bạn có chắc chắn muốn cập nhật hóa đơn này?')">
+            <div class="action-section"><span id="edit-status" class="edit-status" role="status">Thay đổi sẽ được lưu khi bạn bấm Lưu phiếu.</span>
+                <form id="save-form" method="POST" enctype="multipart/form-data" style="display: inline-block; margin-right: 15px;">
                     <input type="hidden" name="action" value="save">
                     <?php echo csrfTokenField(); ?>
-                    <button type="submit" class="btn btn-primary">💾 Lưu Hóa Đơn</button>
+                    <button type="submit" class="btn btn-primary">Lưu phiếu nhập</button>
                 </form>
-                
+
                 <form method="POST" style="display: inline-block;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa hóa đơn này? Hành động này không thể hoàn tác!')">
                     <input type="hidden" name="action" value="delete">
                     <input type="hidden" name="bill_id" value="<?php echo $billId; ?>">
                     <?php echo csrfTokenField(); ?>
-                    <button type="submit" class="btn btn-danger">🗑️ Xóa Hóa Đơn</button>
+                    <button type="submit" class="btn btn-danger">Xóa phiếu</button>
                 </form>
             </div>
-        </div>
+        </main>
     </div>
-
-    <div class="footer">
-        <p>© 2024 - Phần mềm quản lý kho</p>
-    </div>
+</div>
 
     <!-- Lightbox for images -->
-    <div class="lightbox-backdrop" id="lb">
+    <div class="lightbox-backdrop" id="lb" role="dialog" aria-label="Ảnh sản phẩm">
         <div class="lightbox">
             <img id="lb-img" src="" alt="preview">
             <div class="lightbox-nav">
@@ -668,33 +345,19 @@ unset($product);
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
-    <script src="assets/js/shared/sidebar-toggle.js" defer></script>
     <script>
-        // Khởi tạo Flatpickr tiếng Việt cho ô Ngày nhập
-        (function(){
-            if (window.flatpickr) {
-                flatpickr('#import-date', {
-                    locale: flatpickr.l10ns.vn,
-                    dateFormat: 'Y-m-d',
-                    altInput: true,
-                    altFormat: 'd/m/Y',
-                    allowInput: true
-                });
-            }
-        })();
-
-        // Toggle sidebar (dùng chung cơ chế)
-        (function(){
-            var btn = document.getElementById('sidebarToggle');
-            if (btn) {
-                btn.addEventListener('click', function(){
-                    document.body.classList.toggle('sidebar-collapsed');
-                });
-            }
-        })();
-
+        const menu = document.querySelector('.menu-toggle');
+        const setMenu = open => { document.body.classList.toggle('menu-open', open); menu.setAttribute('aria-expanded', String(open)); };
+        menu.addEventListener('click', () => setMenu(!document.body.classList.contains('menu-open')));
+        document.addEventListener('click', e => { if (!e.target.closest('.sidebar, .menu-toggle')) setMenu(false); });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') { setMenu(false); document.getElementById('lb').style.display = 'none'; } });
+        const notice = (message, error = false) => { const box = document.getElementById('save-notice'); box.textContent = message; box.className = error ? 'notice error' : 'notice success'; box.scrollIntoView({block: 'center', behavior: 'smooth'}); };
+        document.querySelectorAll('.invoice-form input, .goods-card input:not([type="file"]), .goods-card select').forEach(input => input.setAttribute('form', 'save-form'));
+        document.querySelectorAll('.goods-field').forEach((field, index) => {
+            const input = field.querySelector('input, select');
+            const label = field.querySelector('label');
+            if (input && label) { input.id ||= 'goods-field-' + index; label.htmlFor = input.id; }
+        });
         function parseCurrencyValue(value) {
             if (value === undefined || value === null) return 0;
             let s = String(value).trim().replace(/\u00A0/g, '').replace(/\s/g, '');
@@ -756,7 +419,7 @@ unset($product);
 
         document.querySelectorAll('input[name*="[so_luong_nhap]"], input[name*="[don_gia]"], input[name*="[vat]"]').forEach(input => {
             input.addEventListener('input', function() {
-                const row = this.closest('tr');
+                const row = this.closest('.goods-card');
                 const soLuongInput = row.querySelector('input[name*="[so_luong_nhap]"]');
                 const donGiaInput = row.querySelector('input[name*="[don_gia]"]');
                 const vatInput = row.querySelector('input[name*="[vat]"]');
@@ -767,9 +430,9 @@ unset($product);
                     const giaSauThue = Math.round((donGia * (1 + vat / 100)) * 1000) / 1000;
                     const tongGiaTruocThue = Math.round(soLuong * donGia * 1000) / 1000;
                     const tongGiaSauThue = Math.round((tongGiaTruocThue + (tongGiaTruocThue * vat / 100)) * 1000) / 1000;
-                    const giaSauThueCell = row.querySelector('td:nth-child(7)');
-                    const thanhTienCell = row.querySelector('td:nth-child(8)');
-                    const tongTienCell = row.querySelector('td:nth-child(9)');
+                    const giaSauThueCell = row.querySelector('[data-value="unit-after"]');
+                    const thanhTienCell = row.querySelector('[data-value="total-before"]');
+                    const tongTienCell = row.querySelector('[data-value="total-after"]');
                     if (giaSauThueCell) giaSauThueCell.textContent = formatNumber(giaSauThue);
                     if (thanhTienCell) thanhTienCell.textContent = formatNumber(tongGiaTruocThue);
                     if (tongTienCell) tongTienCell.textContent = formatNumber(tongGiaSauThue);
@@ -781,7 +444,7 @@ unset($product);
         document.querySelectorAll('input[type="file"]').forEach(input => {
             input.addEventListener('change', function() {
                 const fileName = this.files[0] ? this.files[0].name : 'No file chosen';
-                this.parentElement.querySelector('.file-chosen').textContent = fileName;
+                const label = this.parentElement.querySelector('.file-chosen'); if (label) label.textContent = fileName;
             });
         });
 
@@ -789,12 +452,12 @@ unset($product);
         const wraps = document.querySelectorAll('.thumb-wrap');
         wraps.forEach(w => {
             const productId = w.getAttribute('data-product-id');
-            
+
             // Lấy dữ liệu ảnh từ PHP thay vì gọi API
-            const productRow = w.closest('tr');
-            const productImages = <?php echo json_encode(array_column($products, 'images', 'id')); ?>;
+            const productRow = w.closest('.goods-card');
+            const productImages = <?php echo json_encode(array_column($products, 'images', 'id'), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
             const images = productImages[productId] || [];
-            
+
             if (images && images.length > 1) {
                 const c = w.querySelector('.thumb-count');
                 if (c) {
@@ -802,40 +465,41 @@ unset($product);
                     c.style.display = 'inline-block';
                 }
             }
-            
-            let idx = 0; 
+
+            let idx = 0;
             let list = images.map(img => ({ file_path: img.file_path }));
-            
+
+            w.tabIndex = 0; w.setAttribute('role', 'button'); w.setAttribute('aria-label', 'Xem ảnh sản phẩm'); w.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); w.click(); } });
             w.addEventListener('click', () => {
                 if (!list || list.length === 0) { return; }
-                idx = 0; 
-                document.getElementById('lb-img').src = list[idx].file_path; 
-                document.getElementById('lb').style.display = 'flex';
-                document.getElementById('lb-prev').onclick = () => { 
-                    idx = (idx - 1 + list.length) % list.length; 
-                    document.getElementById('lb-img').src = list[idx].file_path; 
+                idx = 0;
+                document.getElementById('lb-img').src = list[idx].file_path;
+                document.getElementById('lb').style.display = 'flex'; document.getElementById('lb-close').focus();
+                document.getElementById('lb-prev').onclick = () => {
+                    idx = (idx - 1 + list.length) % list.length;
+                    document.getElementById('lb-img').src = list[idx].file_path;
                 };
-                document.getElementById('lb-next').onclick = () => { 
-                    idx = (idx + 1) % list.length; 
-                    document.getElementById('lb-img').src = list[idx].file_path; 
+                document.getElementById('lb-next').onclick = () => {
+                    idx = (idx + 1) % list.length;
+                    document.getElementById('lb-img').src = list[idx].file_path;
                 };
-                document.getElementById('lb-close').onclick = () => { 
-                    document.getElementById('lb').style.display = 'none'; 
+                document.getElementById('lb-close').onclick = () => {
+                    document.getElementById('lb').style.display = 'none'; w.focus();
                 };
             });
         });
 
         // Lưu trữ ảnh tạm thời để upload khi bấm lưu
         let pendingImages = {};
-        
+
         // Xử lý chọn ảnh sản phẩm (chỉ preview, chưa upload)
         function uploadProductImages(productId, input) {
             const files = input.files;
             if (!files || files.length === 0) return;
-            
+
             // Lưu files vào biến tạm
             pendingImages[productId] = files;
-            
+
             // Preview ảnh đầu tiên ngay lập tức
             const preview = document.getElementById('preview_' + productId);
             const reader = new FileReader();
@@ -847,7 +511,7 @@ unset($product);
 
         // Lưu trữ PDF tạm thời để upload khi bấm lưu
         let pendingPDF = null;
-        
+
         // Xử lý chọn PDF (chỉ preview, chưa upload)
         const pdfInput = document.getElementById('pdf-file');
         if (pdfInput) {
@@ -855,14 +519,14 @@ unset($product);
                 const file = e.target.files[0];
                 if (file) {
                     pendingPDF = file;
-                    
+
                     // Preview PDF
                     const pdfPreview = document.getElementById('pdf-preview');
                     if (pdfPreview) {
                         const url = URL.createObjectURL(file);
                         pdfPreview.innerHTML = `
                             <iframe src="${url}" width="100%" height="400px" style="border: 1px solid #ddd; border-radius: 4px;"></iframe>
-                            <p style="margin-top: 10px; color: #666;">PDF đã chọn: ${file.name}</p>
+                            <p style="margin-top: 10px; color: #666;">PDF đã chọn: ${file.name.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;", "'":"&#39;"}[c]))}</p>
                         `;
                     }
                 } else {
@@ -873,19 +537,28 @@ unset($product);
 
         // Xử lý lưu hóa đơn
         const saveForm = document.getElementById('save-form');
+        document.querySelectorAll('.invoice-form input, .goods-card input, .goods-card select, #pdf-file').forEach(input => {
+            input.addEventListener('input', () => {
+                document.getElementById('edit-status').textContent = 'Có thay đổi chưa lưu';
+                document.getElementById('edit-status').classList.add('is-dirty');
+            });
+        });
         if (saveForm) {
             saveForm.addEventListener('submit', function(e) {
                 e.preventDefault();
-                
+                document.querySelectorAll('.item-extras').forEach(details => {
+                    if ([...details.querySelectorAll('input')].some(input => !input.validity.valid)) details.open = true;
+                });
+                if (!this.reportValidity()) return;
                 const submitBtn = this.querySelector('button[type="submit"]');
                 const originalText = submitBtn.textContent;
                 submitBtn.textContent = 'Đang lưu...';
                 submitBtn.disabled = true;
-                
+
                 // Thu thập dữ liệu từ form
                 const formData = new FormData();
                 formData.append('action', 'save');
-                
+
                 // Thông tin hóa đơn
                 const supplier = document.getElementById('supplier').value;
                 const receiverName = document.getElementById('receiver-name').value;
@@ -894,11 +567,11 @@ unset($product);
                 const invoiceNumber = document.getElementById('invoice-number').value;
                 const serial = document.getElementById('serial').value;
                 const totalAmount = document.getElementById('total-amount').value;
-                
+
                 // Thêm CSRF token
                 const csrfToken = document.querySelector('input[name="csrf_token"]').value;
                 formData.append('csrf_token', csrfToken);
-                
+
                 formData.append('supplier', supplier);
                 formData.append('receiver-name', receiverName);
                 formData.append('import-unit', importUnit);
@@ -906,9 +579,9 @@ unset($product);
                 formData.append('invoice-number', invoiceNumber);
                 formData.append('serial', serial);
                 formData.append('total-amount', totalAmount);
-                
+
                 // Thông tin hàng hóa
-                const productRows = document.querySelectorAll('tbody tr');
+                const productRows = document.querySelectorAll('.goods-card');
                 productRows.forEach((row, index) => {
                     const productIdMatch = row.querySelector('input[name*="[so_luong_nhap]"]')?.name.match(/\[(\d+)\]/);
                     if (productIdMatch) {
@@ -923,10 +596,10 @@ unset($product);
                         formData.append(`products[${productId}][serial]`, row.querySelector('input[name*="[serial]"]')?.value || '');
                     }
                 });
-                
+
                 // Upload ảnh trước
                 const uploadPromises = [];
-                
+
                 // Upload ảnh sản phẩm
                 Object.keys(pendingImages).forEach(productId => {
                     const files = pendingImages[productId];
@@ -935,11 +608,11 @@ unset($product);
                         imageFormData.append('action', 'upload_multiple_product_images');
                         imageFormData.append('product_id', productId);
                         imageFormData.append('csrf_token', document.querySelector('input[name="csrf_token"]').value);
-                        
+
                         for (let i = 0; i < files.length; i++) {
                             imageFormData.append('images[]', files[i]);
                         }
-                        
+
                         uploadPromises.push(
                             fetch('products/upload-images.php', {
                                 method: 'POST',
@@ -948,14 +621,14 @@ unset($product);
                         );
                     }
                 });
-                
+
                 // Upload PDF nếu có
                 if (pendingPDF) {
                     const pdfFormData = new FormData();
                     pdfFormData.append('bill_id', '<?php echo $billId; ?>');
                     pdfFormData.append('pdf_file', pendingPDF);
                     pdfFormData.append('csrf_token', document.querySelector('input[name="csrf_token"]').value);
-                    
+
                     uploadPromises.push(
                         fetch('imports/upload-pdf.php', {
                             method: 'POST',
@@ -963,7 +636,7 @@ unset($product);
                         }).then(response => response.json())
                     );
                 }
-                
+
                 // Thực hiện tất cả upload
                 Promise.all(uploadPromises)
                 .then(results => {
@@ -981,32 +654,34 @@ unset($product);
                             uploadMessage = 'upload file thất bại';
                         }
                     }
-                    
+
                     // Lưu thông tin hóa đơn ngay cả khi upload thất bại
                     return fetch(window.location.href, {
                         method: 'POST',
-                        body: formData
-                    }).then(response => {
+                        body: formData, headers: {'Accept': 'application/json'}
+                    }).then(async response => {
+                        const result = await response.json();
+                        if (!response.ok || !result.success) throw new Error(result.message || 'Không thể lưu phiếu nhập.');
                         return { response, uploadMessage };
                     });
                 })
                 .then(({ response, uploadMessage }) => {
                     if (response.ok) {
                         if (uploadMessage) {
-                            alert('Lưu thông tin thành công nhưng ' + uploadMessage.toLowerCase());
+                            notice('Đã lưu thông tin nhưng ' + uploadMessage.toLowerCase() + '. Vui lòng chọn lại tệp và thử lại.', true);
                         } else {
-                            alert('Cập nhật hóa đơn thành công!');
+                            notice('Đã lưu phiếu nhập thành công.');
                         }
                         // Xóa pending images và PDF sau khi lưu thành công
                         pendingImages = {};
                         pendingPDF = null;
-                        location.reload();
+                        if (!uploadMessage) location.reload();
                     } else {
-                        alert('Có lỗi xảy ra khi cập nhật hóa đơn!');
+                        notice('Không thể lưu phiếu nhập. Vui lòng thử lại.', true);
                     }
                 })
                 .catch(error => {
-                    alert('Có lỗi xảy ra khi cập nhật hóa đơn: ' + error.message);
+                    notice(error.message || 'Không thể lưu phiếu nhập. Vui lòng thử lại.', true);
                 })
                 .finally(() => {
                     submitBtn.textContent = originalText;

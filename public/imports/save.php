@@ -1,11 +1,13 @@
 <?php
 chdir(dirname(__DIR__));
 session_start();
-require_once __DIR__ . '/../../app/config/database.php';
+require_once __DIR__ . '/../../app/helpers/csrf_helper.php';
+require_once __DIR__ . '/../../app/helpers/import_input.php';
+header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/../../app/helpers/money_parse.php';
 
 // Kiểm tra quyền truy cập
-if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['role'] !== 'Thủ kho')) {
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['Admin','Thủ kho'], true)) {
     http_response_code(403);
     echo json_encode(['success' => false, 'message' => 'Không có quyền truy cập']);
     exit;
@@ -21,48 +23,53 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Lấy dữ liệu JSON từ request
 $input = json_decode(file_get_contents('php://input'), true);
 
-if (!$input) {
+if (!is_array($input)) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'Dữ liệu không hợp lệ']);
     exit;
 }
 
+if (!is_string($input['csrf_token'] ?? null) || !validateCSRFToken($input['csrf_token'])) {
+    http_response_code(403); echo json_encode(['success'=>false,'message'=>'Phiên xác nhận hết hạn. Vui lòng tải lại trang.']); exit;
+}
+require_once __DIR__ . '/../../app/config/database.php';
 try {
+    $input = validateImportInput($input);
     // Bắt đầu transaction
     $pdo->beginTransaction();
-    
+
     // 1. Kiểm tra số hóa đơn đã tồn tại chưa
     $checkStmt = $pdo->prepare("SELECT id FROM import_bill WHERE so_hoa_don = ?");
     $checkStmt->execute([$input['invoiceNumber']]);
     $existingBill = $checkStmt->fetch();
-    
+
     if ($existingBill) {
-        throw new Exception("Số hóa đơn '{$input['invoiceNumber']}' đã tồn tại trong hệ thống. Vui lòng sử dụng số hóa đơn khác.");
+        throw new DomainException("Số hóa đơn '{$input['invoiceNumber']}' đã tồn tại trong hệ thống. Vui lòng sử dụng số hóa đơn khác.");
     }
-    
+
     // 2. Lưu thông tin vào bảng import_bill
     $stmt = $pdo->prepare("
         INSERT INTO import_bill (
-            so_hoa_don, 
-            serial, 
-            nha_cung_cap, 
+            so_hoa_don,
+            serial,
+            nha_cung_cap,
             nguoi_nhan_hang,
-            nhap_vao_don_vi, 
-            ngay_nhap, 
-            tong_tien, 
+            nhap_vao_don_vi,
+            ngay_nhap,
+            tong_tien,
             so_luong_mat_hang
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     ");
-    
+
     // Xử lý ngày nhập từ form
     $importDate = $input['importDate'] ?? date('Y-m-d');
-    
+
     // Chuyển đổi format ngày từ dd/mm/yyyy (ưu tiên) hoặc yyyy-mm-dd sang yyyy-mm-dd
     if ($importDate && $importDate !== date('Y-m-d')) {
         // Thử parse các format khác nhau
         $formats = ['d/m/Y', 'Y-m-d'];
         $parsedDate = null;
-        
+
         foreach ($formats as $format) {
             $dt = DateTime::createFromFormat($format, $importDate);
             if ($dt && $dt->format($format) === $importDate) {
@@ -70,12 +77,12 @@ try {
                 break;
             }
         }
-        
+
         if ($parsedDate) {
             $importDate = $parsedDate;
         }
     }
-    
+
     $tongTien = round(parseMoneyStringToFloat($input['totalAfterVAT'] ?? 0), 3);
 
     $stmt->execute([
@@ -88,9 +95,9 @@ try {
         $tongTien,
         $input['goodsCount']
     ]);
-    
+
     $importBillId = $pdo->lastInsertId();
-    
+
     // 3. Lưu từng hàng hóa vào bảng products
     foreach ($input['goodsList'] as $goods) {
         $priceBefore = round(parseMoneyStringToFloat($goods['priceBeforeVAT'] ?? 0), 3);
@@ -113,7 +120,7 @@ try {
                 serial
             ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)
         ");
-        
+
         $stmt->execute([
             $goods['name'],
             $goods['unit'],
@@ -126,9 +133,9 @@ try {
             $goods['ghiChu'],
             $goods['serial']
         ]);
-        
+
         $productId = $pdo->lastInsertId();
-        
+
         // 4. Lưu chi tiết vào bảng import_bill_details (nếu có)
         $stmt = $pdo->prepare("
             INSERT INTO import_bill_details (
@@ -139,7 +146,7 @@ try {
                 thanh_tien
             ) VALUES (?, ?, ?, ?, ?)
         ");
-        
+
         $stmt->execute([
             $importBillId,
             $productId,
@@ -148,31 +155,31 @@ try {
             $lineTotal
         ]);
     }
-    
+
     // Commit transaction
     $pdo->commit();
-    
+
     echo json_encode([
-        'success' => true, 
+        'success' => true,
         'message' => 'Đã lưu thông tin nhập hàng thành công',
         'import_bill_id' => $importBillId
     ]);
-    
+
 } catch (PDOException $e) {
     // Rollback nếu có lỗi
-    $pdo->rollBack();
-    
+    if ($pdo->inTransaction()) $pdo->rollBack();
+
     echo json_encode([
-        'success' => false, 
-        'message' => 'Lỗi database: ' . $e->getMessage()
+        'success' => false,
+        'message' => $e->getCode() === '23000' ? 'Số hóa đơn đã tồn tại hoặc dữ liệu không hợp lệ.' : 'Không thể lưu phiếu. Vui lòng thử lại.'
     ]);
-} catch (Exception $e) {
+} catch (Throwable $e) {
     // Rollback nếu có lỗi
-    $pdo->rollBack();
-    
+    if ($pdo->inTransaction()) $pdo->rollBack();
+
     echo json_encode([
-        'success' => false, 
-        'message' => 'Lỗi: ' . $e->getMessage()
+        'success' => false,
+        'message' => $e instanceof DomainException ? $e->getMessage() : 'Không thể lưu phiếu. Vui lòng thử lại.'
     ]);
 }
 ?>
