@@ -1,0 +1,10 @@
+/* Shared local SVG icons: inherit the surrounding text color. */
+.ui-icon{display:inline-block;width:1.2em;height:1.2em;flex-shrink:0;vertical-align:-.2em;pointer-events:none;overflow:visible}
+.nav .ui-icon{width:20px;height:20px}
+.metric-top .ui-icon{width:19px;height:19px}
+.category-icon .ui-icon,.heading-icon .ui-icon,.dialog-icon .ui-icon{width:24px;height:24px}
+.menu-toggle .ui-icon,.sidebar-toggle .ui-icon{width:22px;height:22px;vertical-align:middle}
+.dialog-close .ui-icon,.gallery-close .ui-icon{width:20px;height:20px;vertical-align:middle}
+.product-icon .ui-icon{width:17px;height:17px}
+.sidebar-user>a .ui-icon{width:19px;height:19px}
+.empty-state .ui-icon,.no-image .ui-icon,.upload-icon .ui-icon{width:40px;height:40px}

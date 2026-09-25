@@ -21,6 +21,12 @@
 
 Tên các tệp trong public/uploads/, bảng/cột cơ sở dữ liệu và mã thư viện trong vendor/ được giữ nguyên để không làm sai đường dẫn đã lưu và không thay đổi thư viện.
 
+## Giao diện
+
+- Màu thương hiệu, trạng thái, nút, form và bố cục responsive dùng chung nằm trong `public/assets/css/shared/theme.css`. File này được tải sau CSS riêng của từng trang; chỉnh các biến trong `:root` để đổi bảng màu.
+- Logo dùng `public/assets/images/company-logo.png`; bộ icon SVG dùng `public/assets/icons.svg`.
+- Các trang chuyển từ bố cục cũ dùng khung điều hướng `app/views/shell-start.php`. Hỗ trợ menu điện thoại và bàn phím nằm trong `public/assets/js/shared/theme.js`.
+
 ## Chạy với XAMPP
 
 1. Đặt toàn bộ thư mục qlvt-new trong htdocs, hoặc cấu hình Apache Alias/VirtualHost trỏ DocumentRoot tới qlvt-new/public.

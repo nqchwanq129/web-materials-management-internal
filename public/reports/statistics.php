@@ -144,8 +144,11 @@ $totalQuantity = $importedQuantity + $exportedQuantity;
     <link rel="stylesheet" href="assets/css/dashboard/admin.css">
     <link rel="stylesheet" href="assets/css/reports/statistics.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="assets/css/shared/icons.css">
+    <link rel="stylesheet" href="assets/css/shared/theme.css">
 </head>
 <body>
+<a class="skip-link" href="<?= htmlspecialchars($_SERVER['REQUEST_URI'] ?? basename(__DIR__) . '/' . basename(__FILE__), ENT_QUOTES, 'UTF-8') ?>#main-content">Đến nội dung chính</a>
 <?php
 $name = htmlspecialchars($_SESSION['full_name'] ?? $_SESSION['username'] ?? 'Người dùng', ENT_QUOTES, 'UTF-8');
 $home = $_SESSION['role'] === 'Admin' ? 'dashboard/admin.php' : 'dashboard/warehouse.php';
@@ -153,30 +156,30 @@ $format = static fn($number) => number_format((float) $number, 0, ',', '.');
 ?>
 <div class="dashboard">
     <aside class="sidebar" id="dashboard-sidebar">
-        <a class="brand" href="<?= $home ?>"><span class="brand-mark">V</span><span>VISHIPEL</span></a>
+        <a class="brand" href="<?= $home ?>"><img src="assets/images/company-logo.png" alt="VISHIPEL" width="500" height="500"></a>
         <div class="nav-label">TỔNG QUAN</div>
         <nav class="nav" aria-label="Điều hướng chính">
-            <a href="<?= $home ?>"><span>▦</span>Bảng điều khiển</a>
-            <a class="active" href="reports/statistics.php"><span>▥</span>Thống kê</a>
+            <a href="<?= $home ?>"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#dashboard"></use></svg></span>Bảng điều khiển</a>
+            <a class="active" href="reports/statistics.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#chart"></use></svg></span>Thống kê</a>
             <div class="nav-label">QUẢN LÝ KHO</div>
-            <a href="products/index.php"><span>◫</span>Hàng hóa</a>
-            <a href="imports/index.php"><span>↙</span>Phiếu nhập kho</a>
-            <a href="imports/create.php"><span>＋</span>Tạo phiếu nhập</a>
-            <a href="exports/index.php"><span>↗</span>Phiếu xuất kho</a>
-            <a href="exports/create.php"><span>＋</span>Tạo phiếu xuất</a>
+            <a href="products/index.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#package"></use></svg></span>Hàng hóa</a>
+            <a href="imports/index.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#import"></use></svg></span>Phiếu nhập kho</a>
+            <a href="imports/create.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#file-plus"></use></svg></span>Tạo phiếu nhập</a>
+            <a href="exports/index.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#export"></use></svg></span>Phiếu xuất kho</a>
+            <a href="exports/create.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#file-plus"></use></svg></span>Tạo phiếu xuất</a>
             <?php if ($_SESSION['role'] === 'Admin'): ?>
                 <div class="nav-label">HỆ THỐNG</div>
-                <a href="accounts/index.php"><span>♙</span>Tài khoản</a>
+                <a href="accounts/index.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#users"></use></svg></span>Tài khoản</a>
             <?php endif; ?>
         </nav>
-        <div class="sidebar-user"><span class="avatar">A</span><span><strong><?= $name ?></strong><small><?= $_SESSION['role'] === 'Admin' ? 'Quản trị viên' : 'Thủ kho' ?></small></span><a href="auth/log-out.php" title="Đăng xuất" aria-label="Đăng xuất">⇥</a></div>
+        <div class="sidebar-user"><span class="avatar">A</span><span><strong><?= $name ?></strong><small><?= $_SESSION['role'] === 'Admin' ? 'Quản trị viên' : 'Thủ kho' ?></small></span><a href="auth/log-out.php" title="Đăng xuất" aria-label="Đăng xuất"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#logout"></use></svg></a></div>
     </aside>
     <div class="content-shell">
         <header class="topbar">
-            <div class="topbar-left"><button class="menu-toggle" type="button" aria-controls="dashboard-sidebar" aria-expanded="false" aria-label="Mở menu">☰</button><div><span class="breadcrumb">Tổng quan / Thống kê</span><h1>Số liệu thống kê</h1></div></div>
+            <div class="topbar-left"><button class="menu-toggle" type="button" aria-controls="dashboard-sidebar" aria-expanded="false" aria-label="Mở menu"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#menu"></use></svg></button><div><span class="breadcrumb">Tổng quan / Thống kê</span><h1>Số liệu thống kê</h1></div></div>
             <div class="topbar-actions"><span><?= date('d/m/Y') ?></span><span class="top-avatar">A</span></div>
         </header>
-        <main class="main-content">
+        <main class="main-content" id="main-content" tabindex="-1">
             <div class="page-intro"><div><h2>Báo cáo tổng quan</h2><p>Theo dõi tài khoản, hàng hóa và hoạt động nhập xuất</p></div></div>
             <form class="filter-panel" method="get" action="reports/statistics.php">
                 <div class="filter-title"><strong>Khoảng thời gian</strong><span>Áp dụng cho hàng hóa, phiếu nhập xuất và số lượng</span></div>
@@ -187,16 +190,16 @@ $format = static fn($number) => number_format((float) $number, 0, ',', '.');
             </form>
             <?php if ($filterError): ?><p class="filter-note" role="alert"><?= htmlspecialchars($filterError, ENT_QUOTES, 'UTF-8') ?> Số liệu đang hiển thị cho toàn bộ thời gian.</p><?php endif; ?>
             <section class="metrics" aria-label="Số liệu tổng quan">
-                <article class="metric"><div class="metric-top"><span>Tài khoản</span><i class="blue">♙</i></div><strong><?= $format($totalUsers) ?></strong><small>Toàn hệ thống</small></article>
-                <article class="metric"><div class="metric-top"><span>Hàng hóa</span><i class="green">◫</i></div><strong><?= $format($totalProducts) ?></strong><small>Theo khoảng thời gian</small></article>
-                <article class="metric"><div class="metric-top"><span>Phiếu nhập / xuất</span><i class="orange">↗</i></div><strong><?= $format($totalInvoices) ?></strong><small>Theo khoảng thời gian</small></article>
-                <article class="metric"><div class="metric-top"><span>Tồn kho hiện tại</span><i class="red">▣</i></div><strong><?= $format($remainingQuantity) ?></strong><small>Không áp dụng lọc ngày</small></article>
+                <article class="metric"><div class="metric-top"><span>Tài khoản</span><i class="blue"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#users"></use></svg></i></div><strong><?= $format($totalUsers) ?></strong><small>Toàn hệ thống</small></article>
+                <article class="metric"><div class="metric-top"><span>Hàng hóa</span><i class="green"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#package"></use></svg></i></div><strong><?= $format($totalProducts) ?></strong><small>Theo khoảng thời gian</small></article>
+                <article class="metric"><div class="metric-top"><span>Phiếu nhập / xuất</span><i class="orange"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#export"></use></svg></i></div><strong><?= $format($totalInvoices) ?></strong><small>Theo khoảng thời gian</small></article>
+                <article class="metric"><div class="metric-top"><span>Tồn kho hiện tại</span><i class="red"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#warehouse"></use></svg></i></div><strong><?= $format($remainingQuantity) ?></strong><small>Không áp dụng lọc ngày</small></article>
             </section>
             <div class="report-grid">
-                <section class="panel report-card"><div class="report-heading"><div><h3>Tài khoản theo vai trò</h3><p>Dữ liệu toàn hệ thống</p></div><strong><?= $format($totalUsers) ?></strong></div><div class="report-chart"><canvas id="userChart"></canvas></div><div class="report-list"><div><span><i style="background:#5c8bea"></i>Admin</span><strong><?= $format($adminCount) ?></strong></div><div><span><i style="background:#65bd91"></i>Thủ kho</span><strong><?= $format($thuKhoCount) ?></strong></div><div><span><i style="background:#f0b862"></i>Người nhận hàng</span><strong><?= $format($nguoiNhanCount) ?></strong></div></div></section>
-                <section class="panel report-card"><div class="report-heading"><div><h3>Hàng hóa theo nhóm</h3><p>Đếm theo ngày nhập của từng hàng hóa</p></div><strong><?= $format($totalProducts) ?></strong></div><div class="report-chart"><canvas id="productChart"></canvas></div><div class="report-list"><div><span><i style="background:#5c8bea"></i>Công cụ dụng cụ</span><strong><?= $format($congCuCount) ?></strong></div><div><span><i style="background:#65bd91"></i>Vật tư</span><strong><?= $format($vatTuCount) ?></strong></div><div><span><i style="background:#f0b862"></i>Phụ tùng thay thế</span><strong><?= $format($phuTungCount) ?></strong></div><div><span><i style="background:#e88791"></i>Tài sản cố định</span><strong><?= $format($taiSanCount) ?></strong></div><div><span><i style="background:#a88bd2"></i>Khác</span><strong><?= $format($khacCount) ?></strong></div></div></section>
-                <section class="panel report-card"><div class="report-heading"><div><h3>Phiếu nhập và xuất</h3><p>Hoạt động kho trong kỳ</p></div><strong><?= $format($totalInvoices) ?></strong></div><div class="report-chart"><canvas id="invoiceChart"></canvas></div><div class="report-list"><div><span><i style="background:#5c8bea"></i>Phiếu nhập</span><strong><?= $format($importInvoices) ?></strong></div><div><span><i style="background:#65bd91"></i>Phiếu xuất</span><strong><?= $format($exportInvoices) ?></strong></div></div></section>
-                <section class="panel report-card"><div class="report-heading"><div><h3>Số lượng nhập xuất</h3><p>Tổng phát sinh theo khoảng thời gian</p></div><strong><?= $format($totalQuantity) ?></strong></div><div class="report-chart"><canvas id="quantityChart"></canvas></div><div class="report-list"><div><span><i style="background:#5c8bea"></i>Đã nhập</span><strong><?= $format($importedQuantity) ?></strong></div><div><span><i style="background:#65bd91"></i>Đã xuất</span><strong><?= $format($exportedQuantity) ?></strong></div></div></section>
+                <section class="panel report-card"><div class="report-heading"><div><h3>Tài khoản theo vai trò</h3><p>Dữ liệu toàn hệ thống</p></div><strong><?= $format($totalUsers) ?></strong></div><div class="report-chart"><canvas id="userChart"></canvas></div><div class="report-list"><div><span><i style="background:#6654a0"></i>Admin</span><strong><?= $format($adminCount) ?></strong></div><div><span><i style="background:#65bd91"></i>Thủ kho</span><strong><?= $format($thuKhoCount) ?></strong></div><div><span><i style="background:#f0b862"></i>Người nhận hàng</span><strong><?= $format($nguoiNhanCount) ?></strong></div></div></section>
+                <section class="panel report-card"><div class="report-heading"><div><h3>Hàng hóa theo nhóm</h3><p>Đếm theo ngày nhập của từng hàng hóa</p></div><strong><?= $format($totalProducts) ?></strong></div><div class="report-chart"><canvas id="productChart"></canvas></div><div class="report-list"><div><span><i style="background:#6654a0"></i>Công cụ dụng cụ</span><strong><?= $format($congCuCount) ?></strong></div><div><span><i style="background:#65bd91"></i>Vật tư</span><strong><?= $format($vatTuCount) ?></strong></div><div><span><i style="background:#f0b862"></i>Phụ tùng thay thế</span><strong><?= $format($phuTungCount) ?></strong></div><div><span><i style="background:#e88791"></i>Tài sản cố định</span><strong><?= $format($taiSanCount) ?></strong></div><div><span><i style="background:#a88bd2"></i>Khác</span><strong><?= $format($khacCount) ?></strong></div></div></section>
+                <section class="panel report-card"><div class="report-heading"><div><h3>Phiếu nhập và xuất</h3><p>Hoạt động kho trong kỳ</p></div><strong><?= $format($totalInvoices) ?></strong></div><div class="report-chart"><canvas id="invoiceChart"></canvas></div><div class="report-list"><div><span><i style="background:#6654a0"></i>Phiếu nhập</span><strong><?= $format($importInvoices) ?></strong></div><div><span><i style="background:#65bd91"></i>Phiếu xuất</span><strong><?= $format($exportInvoices) ?></strong></div></div></section>
+                <section class="panel report-card"><div class="report-heading"><div><h3>Số lượng nhập xuất</h3><p>Tổng phát sinh theo khoảng thời gian</p></div><strong><?= $format($totalQuantity) ?></strong></div><div class="report-chart"><canvas id="quantityChart"></canvas></div><div class="report-list"><div><span><i style="background:#6654a0"></i>Đã nhập</span><strong><?= $format($importedQuantity) ?></strong></div><div><span><i style="background:#65bd91"></i>Đã xuất</span><strong><?= $format($exportedQuantity) ?></strong></div></div></section>
             </div>
         </main>
     </div>
@@ -218,11 +221,12 @@ if (window.Chart) {
     charts.forEach(([id, labels, values]) => {
         new Chart(document.getElementById(id), {
             type: 'doughnut',
-            data: {labels, datasets: [{data: values, backgroundColor: ['#5c8bea','#65bd91','#f0b862','#e88791','#a88bd2'], borderWidth: 0, hoverOffset: 4}]},
+            data: {labels, datasets: [{data: values, backgroundColor: ['#6654a0','#65bd91','#f0b862','#e88791','#a88bd2'], borderWidth: 0, hoverOffset: 4}]},
             options: {responsive: true, maintainAspectRatio: false, cutout: '72%', plugins: {legend: {display: false}}}
         });
     });
 }
 </script>
+<script src="assets/js/shared/theme.js" defer></script>
 </body>
 </html>

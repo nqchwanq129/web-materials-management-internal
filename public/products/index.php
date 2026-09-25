@@ -11,11 +11,11 @@ function productEsc($value): string {
     return htmlspecialchars((string) ($value ?? ''), ENT_QUOTES, 'UTF-8');
 }
 $types = [
-    'cong-cu' => ['name' => 'Công cụ dụng cụ', 'icon' => '▣', 'tone' => 'blue'],
-    'vat-tu' => ['name' => 'Vật tư', 'icon' => '◫', 'tone' => 'green'],
-    'tai-san' => ['name' => 'Tài sản cố định', 'icon' => '◇', 'tone' => 'purple'],
-    'phu-tung' => ['name' => 'Phụ tùng thay thế', 'icon' => '⚙', 'tone' => 'orange'],
-    'khac' => ['name' => 'Khác', 'icon' => '▦', 'tone' => 'gray'],
+    'cong-cu' => ['name' => 'Công cụ dụng cụ', 'icon' => '<svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#tools"></use></svg>', 'tone' => 'blue'],
+    'vat-tu' => ['name' => 'Vật tư', 'icon' => '<svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#package"></use></svg>', 'tone' => 'green'],
+    'tai-san' => ['name' => 'Tài sản cố định', 'icon' => '<svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#building"></use></svg>', 'tone' => 'purple'],
+    'phu-tung' => ['name' => 'Phụ tùng thay thế', 'icon' => '<svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#settings"></use></svg>', 'tone' => 'orange'],
+    'khac' => ['name' => 'Khác', 'icon' => '<svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#dashboard"></use></svg>', 'tone' => 'gray'],
 ];
 $search = is_string($_GET['search'] ?? null) ? trim($_GET['search']) : '';
 $type = is_string($_GET['type'] ?? null) ? $_GET['type'] : '';
@@ -104,31 +104,34 @@ $pageUrl = static function (int $target) use ($type, $search, $startDate, $endDa
     <title>Hàng hóa | VISHIPEL</title>
     <link rel="stylesheet" href="assets/css/dashboard/admin.css">
     <link rel="stylesheet" href="assets/css/products/index.css">
+    <link rel="stylesheet" href="assets/css/shared/icons.css">
+    <link rel="stylesheet" href="assets/css/shared/theme.css">
 </head>
 <body>
+<a class="skip-link" href="<?= htmlspecialchars($_SERVER['REQUEST_URI'] ?? basename(__DIR__) . '/' . basename(__FILE__), ENT_QUOTES, 'UTF-8') ?>#main-content">Đến nội dung chính</a>
 <div class="dashboard">
     <aside class="sidebar" id="dashboard-sidebar">
-        <a class="brand" href="<?= $home ?>"><span class="brand-mark">V</span><span>VISHIPEL</span></a>
+        <a class="brand" href="<?= $home ?>"><img src="assets/images/company-logo.png" alt="VISHIPEL" width="500" height="500"></a>
         <div class="nav-label">TỔNG QUAN</div>
         <nav class="nav" aria-label="Điều hướng chính">
-            <a href="<?= $home ?>"><span>▦</span>Bảng điều khiển</a>
-            <a href="reports/statistics.php"><span>▥</span>Thống kê</a>
+            <a href="<?= $home ?>"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#dashboard"></use></svg></span>Bảng điều khiển</a>
+            <a href="reports/statistics.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#chart"></use></svg></span>Thống kê</a>
             <div class="nav-label">QUẢN LÝ KHO</div>
-            <a class="active" href="products/index.php"><span>◫</span>Hàng hóa</a>
-            <a href="imports/index.php"><span>↙</span>Phiếu nhập kho</a>
-            <a href="imports/create.php"><span>＋</span>Tạo phiếu nhập</a>
-            <a href="exports/index.php"><span>↗</span>Phiếu xuất kho</a>
-            <a href="exports/create.php"><span>＋</span>Tạo phiếu xuất</a>
-            <?php if ($_SESSION['role'] === 'Admin'): ?><div class="nav-label">HỆ THỐNG</div><a href="accounts/index.php"><span>♙</span>Tài khoản</a><?php endif; ?>
+            <a class="active" href="products/index.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#package"></use></svg></span>Hàng hóa</a>
+            <a href="imports/index.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#import"></use></svg></span>Phiếu nhập kho</a>
+            <a href="imports/create.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#file-plus"></use></svg></span>Tạo phiếu nhập</a>
+            <a href="exports/index.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#export"></use></svg></span>Phiếu xuất kho</a>
+            <a href="exports/create.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#file-plus"></use></svg></span>Tạo phiếu xuất</a>
+            <?php if ($_SESSION['role'] === 'Admin'): ?><div class="nav-label">HỆ THỐNG</div><a href="accounts/index.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#users"></use></svg></span>Tài khoản</a><?php endif; ?>
         </nav>
-        <div class="sidebar-user"><span class="avatar"><?= productEsc(mb_substr($_SESSION['full_name'] ?? 'N', 0, 1)) ?></span><span><strong><?= $name ?></strong><small><?= productEsc($_SESSION['role']) ?></small></span><a href="auth/log-out.php" title="Đăng xuất" aria-label="Đăng xuất">⇥</a></div>
+        <div class="sidebar-user"><span class="avatar"><?= productEsc(mb_substr($_SESSION['full_name'] ?? 'N', 0, 1)) ?></span><span><strong><?= $name ?></strong><small><?= productEsc($_SESSION['role']) ?></small></span><a href="auth/log-out.php" title="Đăng xuất" aria-label="Đăng xuất"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#logout"></use></svg></a></div>
     </aside>
     <div class="content-shell">
-        <header class="topbar"><div class="topbar-left"><button class="menu-toggle" type="button" aria-controls="dashboard-sidebar" aria-expanded="false" aria-label="Mở menu">☰</button><div><span class="breadcrumb">Quản lý kho / Hàng hóa</span><h1>Tất cả hàng hóa</h1></div></div><div class="topbar-actions"><span><?= date('d/m/Y') ?></span><span class="top-avatar"><?= productEsc(mb_substr($_SESSION['full_name'] ?? 'N', 0, 1)) ?></span></div></header>
-        <main class="main-content">
+        <header class="topbar"><div class="topbar-left"><button class="menu-toggle" type="button" aria-controls="dashboard-sidebar" aria-expanded="false" aria-label="Mở menu"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#menu"></use></svg></button><div><span class="breadcrumb">Quản lý kho / Hàng hóa</span><h1>Tất cả hàng hóa</h1></div></div><div class="topbar-actions"><span><?= date('d/m/Y') ?></span><span class="top-avatar"><?= productEsc(mb_substr($_SESSION['full_name'] ?? 'N', 0, 1)) ?></span></div></header>
+        <main class="main-content" id="main-content" tabindex="-1">
             <div class="page-intro"><div><h2>Danh sách hàng hóa</h2><p>Tra cứu hàng hóa, theo dõi nhập xuất và số lượng còn lại</p></div><span class="result-pill"><?= number_format($allCount, 0, ',', '.') ?> hàng hóa</span></div>
             <nav class="category-grid" aria-label="Phân loại hàng hóa">
-                <a class="category-card all <?= $type === '' ? 'selected' : '' ?>" href="<?= productEsc($categoryUrl('')) ?>" <?= $type === '' ? 'aria-current="page"' : '' ?>><span class="category-icon blue">◫</span><span class="category-copy"><strong>Tất cả hàng hóa</strong><small>Toàn bộ danh mục</small></span><b><?= number_format($allCount, 0, ',', '.') ?></b></a>
+                <a class="category-card all <?= $type === '' ? 'selected' : '' ?>" href="<?= productEsc($categoryUrl('')) ?>" <?= $type === '' ? 'aria-current="page"' : '' ?>><span class="category-icon blue"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#package"></use></svg></span><span class="category-copy"><strong>Tất cả hàng hóa</strong><small>Toàn bộ danh mục</small></span><b><?= number_format($allCount, 0, ',', '.') ?></b></a>
                 <?php foreach ($types as $key => $meta): ?>
                     <a class="category-card <?= $type === $key ? 'selected' : '' ?>" href="<?= productEsc($categoryUrl($key)) ?>" <?= $type === $key ? 'aria-current="page"' : '' ?>><span class="category-icon <?= $meta['tone'] ?>"><?= $meta['icon'] ?></span><span class="category-copy"><strong><?= productEsc($meta['name']) ?></strong><small>Nhóm hàng hóa</small></span><b><?= number_format($typeCounts[$key], 0, ',', '.') ?></b></a>
                 <?php endforeach; ?>
@@ -201,5 +204,6 @@ document.getElementById('export-months')?.addEventListener('click', (event) => {
     form.submit();
 });
 </script>
+<script src="assets/js/shared/theme.js" defer></script>
 </body>
 </html>

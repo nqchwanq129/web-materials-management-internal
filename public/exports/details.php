@@ -122,10 +122,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         
         $pdo->commit();
         $success_message = "Cập nhật hóa đơn xuất thành công!";
+        if (strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false) {
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['success' => true, 'message' => $success_message]);
+            exit;
+        }
         
     } catch (Exception $e) {
         $pdo->rollBack();
-        $error_message = "Lỗi: " . $e->getMessage();
+        error_log('Export update failed: ' . $e->getMessage());
+        $error_message = $e instanceof PDOException ? 'Chưa thể lưu phiếu xuất. Vui lòng thử lại.' : $e->getMessage();
+        if (strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false) {
+            http_response_code(422);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode(['success' => false, 'message' => $error_message]);
+            exit;
+        }
     }
 }
 
@@ -138,7 +150,7 @@ if (!$bill) { header('Location: ../exports/index.php'); exit; }
 // Lấy danh sách hàng hóa xuất
 $details = [];
 try {
-    $st = $pdo->prepare('SELECT ebd.*, p.ten_san_pham, p.loai, p.don_vi FROM export_bill_details ebd JOIN products p ON p.id = ebd.product_id LEFT JOIN import_bill_details ibd ON ibd.product_id = ebd.product_id WHERE ebd.export_bill_id = ? ORDER BY COALESCE(ibd.id, ebd.id) ASC');
+    $st = $pdo->prepare('SELECT ebd.*, p.ten_san_pham, p.loai, p.don_vi FROM export_bill_details ebd JOIN products p ON p.id = ebd.product_id WHERE ebd.export_bill_id = ? ORDER BY ebd.id ASC');
     $st->execute([$id]);
     $details = $st->fetchAll();
 } catch (Exception $e) {
@@ -153,63 +165,20 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Phiếu xuất kho số <?php echo htmlspecialchars($bill['id']); ?></title>
-    <link rel="stylesheet" href="assets/css/shared/layout.css">
+    <link rel="stylesheet" href="assets/css/dashboard/admin.css">
     <link rel="stylesheet" href="assets/css/exports/details.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="assets/css/shared/icons.css">
+    <link rel="stylesheet" href="assets/css/shared/theme.css">
 </head>
-<body>
-    <button class="sidebar-toggle" id="sidebarToggle">☰</button>
-    <div class="header">
-        <div class="logo">
-            <img src="assets/images/company-logo.png" alt="Vishipel Logo">
-            <div class="logo-text">
-                <h1>PHẦN MỀM QUẢN LÝ KHO VISHIPEL</h1>
-                <p>CÔNG TY TNHH MTV THÔNG TIN ĐIỆN TỬ HÀNG HẢI VIỆT NAM</p>
-            </div>
-        </div>
-        <div class="user-info">
-            <span class="greeting">Xin chào <?php echo htmlspecialchars($_SESSION['full_name']); ?></span>
-            <a href="auth/log-out.php" class="logout-btn">Đăng xuất</a>
-        </div>
-    </div>
+<body class="migrated-page">
+<a class="skip-link" href="<?= htmlspecialchars($_SERVER['REQUEST_URI'] ?? basename(__DIR__) . '/' . basename(__FILE__), ENT_QUOTES, 'UTF-8') ?>#main-content">Đến nội dung chính</a>
+<?php $shellTitle = 'Chi tiết phiếu xuất'; $shellActive = 'exports/index.php'; require __DIR__ . '/../../app/views/shell-start.php'; ?>
 
-    <div class="container">
-        <div class="sidebar">
-            <ul class="menu">
-                <li><a href="reports/statistics.php">Số liệu thống kê</a></li>
-                <?php if ($_SESSION['role'] === 'Admin'): ?>
-                <li><a href="accounts/index.php">Quản lý tài khoản</a></li>
-                <?php endif; ?>
-                <li>Nhập hàng hóa
-                    <ul>
-                        <li><a href="imports/create.php">Nhập hóa đơn</a></li>
-                        <li><a href="imports/index.php">DS phiếu nhập kho</a></li>
-                    </ul>
-                </li>
-                <li class="active">Xuất hàng hóa
-                    <ul>
-                        <li><a href="exports/create.php">Xuất hóa đơn</a></li>
-                        <li class="active"><a href="exports/index.php">DS phiếu xuất kho</a></li>
-                    </ul>
-                </li>
-                <li>Danh Sách Hàng Hóa
-                    <ul>
-                        <li><a href="products/index.php">Tất Cả Hàng Hóa</a></li>
-                        <li><a href="products/index.php?type=cong-cu">Công Cụ Dụng Cụ</a></li>
-                        <li><a href="products/index.php?type=vat-tu">Vật Tư</a></li>
-                        <li><a href="products/index.php?type=tai-san">Tài Sản Cố Định</a></li>
-                        <li><a href="products/index.php?type=phu-tung">Phụ Tùng Thay Thế</a></li>
-                        <li><a href="products/index.php?type=khac">Khác</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-
-        <div class="main-content">
             <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
                 <h2>Phiếu xuất kho số <?php echo htmlspecialchars($bill['id']); ?></h2>
                 <div>
-                    <a href="exports/export-excel.php?id=<?php echo htmlspecialchars($bill['id']); ?>" class="btn btn-success">📊 Xuất Excel</a>
+                    <a href="exports/export-excel.php?id=<?php echo htmlspecialchars($bill['id']); ?>" class="btn btn-success"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#spreadsheet"></use></svg> Xuất Excel</a>
                 </div>
             </div>
 
@@ -244,7 +213,7 @@ try {
                                     <div class="date-input-container">
                                         <input type="text" id="ngay_xuat" name="ngay_xuat" class="date-picker" placeholder="dd/mm/yyyy"
                                                value="<?php echo isset($bill['ngay_nhan']) ? date('Y-m-d', strtotime($bill['ngay_nhan'])) : date('Y-m-d'); ?>" required>
-                                        <span class="calendar-icon">📅</span>
+                                        <span class="calendar-icon"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#calendar"></use></svg></span>
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -326,16 +295,16 @@ try {
                 <form id="save-form" method="POST" style="display: inline-block; margin-right: 15px;">
                     <input type="hidden" name="action" value="save">
                     <?php echo csrfTokenField(); ?>
-                    <button type="submit" class="btn btn-primary">💾 Lưu Hóa Đơn</button>
+                    <button type="submit" class="btn btn-primary"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#save"></use></svg> Lưu Hóa Đơn</button>
                 </form>
                 
-                <button type="button" class="btn btn-danger" id="btn-recall">🗑️ Thu hồi</button>
+                <button type="button" class="btn btn-danger" id="btn-recall"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#undo"></use></svg> Thu hồi</button>
             </div>
         </div>
     </div>
+</div>
 
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="assets/js/shared/sidebar-toggle.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
     <script>
         // Toggle sidebar
@@ -501,19 +470,21 @@ try {
                 // Gửi dữ liệu
                 fetch(window.location.href, {
                     method: 'POST',
+                    headers: { 'Accept': 'application/json' },
                     body: formData
                 })
-                .then(response => {
-                    if (response.ok) {
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
                         alert('Cập nhật hóa đơn xuất thành công!');
                         location.reload();
                     } else {
-                        alert('Có lỗi xảy ra khi cập nhật hóa đơn!');
+                        alert(result.message || 'Chưa thể lưu phiếu xuất. Vui lòng thử lại.');
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Có lỗi xảy ra khi cập nhật hóa đơn: ' + error.message);
+                    alert('Chưa thể kết nối để lưu phiếu xuất. Vui lòng thử lại.');
                 });
             });
         }
@@ -523,7 +494,7 @@ try {
             fetch('exports/cancel.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: 'id=' + <?php echo json_encode((int)$bill['id']); ?>
+                body: new URLSearchParams({id: <?= json_encode((int)$bill['id']) ?>, csrf_token: document.querySelector('input[name="csrf_token"]').value})
             }).then(r=>r.json()).then(res=>{
                 if (res.success){
                     alert('Đã thu hồi phiếu xuất thành công');
@@ -536,7 +507,7 @@ try {
 
         // nothing
     </script>
+<script src="assets/js/shared/theme.js" defer></script>
 </body>
 </html>
-
 

@@ -129,40 +129,43 @@ $name = accountEsc($_SESSION['full_name'] ?? $_SESSION['username'] ?? 'Admin');
     <link rel="stylesheet" href="assets/css/dashboard/admin.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/2.3.6/css/dataTables.dataTables.min.css">
     <link rel="stylesheet" href="assets/css/accounts/index.css">
+    <link rel="stylesheet" href="assets/css/shared/icons.css">
+    <link rel="stylesheet" href="assets/css/shared/theme.css">
 </head>
 <body>
+<a class="skip-link" href="<?= htmlspecialchars($_SERVER['REQUEST_URI'] ?? basename(__DIR__) . '/' . basename(__FILE__), ENT_QUOTES, 'UTF-8') ?>#main-content">Đến nội dung chính</a>
 <div class="dashboard">
     <aside class="sidebar" id="dashboard-sidebar">
-        <a class="brand" href="dashboard/admin.php"><span class="brand-mark">V</span><span>VISHIPEL</span></a>
+        <a class="brand" href="dashboard/admin.php"><img src="assets/images/company-logo.png" alt="VISHIPEL" width="500" height="500"></a>
         <div class="nav-label">TỔNG QUAN</div>
         <nav class="nav" aria-label="Điều hướng chính">
-            <a href="dashboard/admin.php"><span>▦</span>Bảng điều khiển</a>
-            <a href="reports/statistics.php"><span>▥</span>Thống kê</a>
+            <a href="dashboard/admin.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#dashboard"></use></svg></span>Bảng điều khiển</a>
+            <a href="reports/statistics.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#chart"></use></svg></span>Thống kê</a>
             <div class="nav-label">QUẢN LÝ KHO</div>
-            <a href="products/index.php"><span>◫</span>Hàng hóa</a>
-            <a href="imports/index.php"><span>↙</span>Phiếu nhập kho</a>
-            <a href="imports/create.php"><span>＋</span>Tạo phiếu nhập</a>
-            <a href="exports/index.php"><span>↗</span>Phiếu xuất kho</a>
-            <a href="exports/create.php"><span>＋</span>Tạo phiếu xuất</a>
+            <a href="products/index.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#package"></use></svg></span>Hàng hóa</a>
+            <a href="imports/index.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#import"></use></svg></span>Phiếu nhập kho</a>
+            <a href="imports/create.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#file-plus"></use></svg></span>Tạo phiếu nhập</a>
+            <a href="exports/index.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#export"></use></svg></span>Phiếu xuất kho</a>
+            <a href="exports/create.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#file-plus"></use></svg></span>Tạo phiếu xuất</a>
             <div class="nav-label">HỆ THỐNG</div>
-            <a class="active" href="accounts/index.php"><span>♙</span>Tài khoản</a>
+            <a class="active" href="accounts/index.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#users"></use></svg></span>Tài khoản</a>
         </nav>
-        <div class="sidebar-user"><span class="avatar">A</span><span><strong><?= $name ?></strong><small>Quản trị viên</small></span><a href="auth/log-out.php" title="Đăng xuất" aria-label="Đăng xuất">⇥</a></div>
+        <div class="sidebar-user"><span class="avatar">A</span><span><strong><?= $name ?></strong><small>Quản trị viên</small></span><a href="auth/log-out.php" title="Đăng xuất" aria-label="Đăng xuất"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#logout"></use></svg></a></div>
     </aside>
     <div class="content-shell">
-        <header class="topbar"><div class="topbar-left"><button class="menu-toggle" type="button" aria-controls="dashboard-sidebar" aria-expanded="false" aria-label="Mở menu">☰</button><div><span class="breadcrumb">Hệ thống / Tài khoản</span><h1>Quản lý tài khoản</h1></div></div><div class="topbar-actions"><span><?= date('d/m/Y') ?></span><span class="top-avatar">A</span></div></header>
-        <main class="main-content">
-            <div class="page-intro"><div><h2>Quản lý tài khoản</h2><p>Thêm, cập nhật và quản lý quyền truy cập hệ thống</p></div><button type="button" class="add-account-btn" id="open-account-dialog"><span aria-hidden="true">＋</span> Thêm tài khoản</button></div>
+        <header class="topbar"><div class="topbar-left"><button class="menu-toggle" type="button" aria-controls="dashboard-sidebar" aria-expanded="false" aria-label="Mở menu"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#menu"></use></svg></button><div><span class="breadcrumb">Hệ thống / Tài khoản</span><h1>Quản lý tài khoản</h1></div></div><div class="topbar-actions"><span><?= date('d/m/Y') ?></span><span class="top-avatar">A</span></div></header>
+        <main class="main-content" id="main-content" tabindex="-1">
+            <div class="page-intro"><div><h2>Quản lý tài khoản</h2><p>Thêm, cập nhật và quản lý quyền truy cập hệ thống</p></div><button type="button" class="add-account-btn" id="open-account-dialog"><span aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#plus"></use></svg></span> Thêm tài khoản</button></div>
             <?php if ($notice): ?><div class="account-notice <?= $notice[0] === 'success' ? 'success' : 'error' ?>" id="account-page-notice" role="alert"><?= accountEsc($notice[1]) ?></div><?php endif; ?>
             <section class="metrics account-metrics" aria-label="Tổng quan tài khoản">
-                <article class="metric"><div class="metric-top"><span>Tổng tài khoản</span><i class="blue">♙</i></div><strong><?= count($users) ?></strong><small>Toàn hệ thống</small></article>
-                <article class="metric"><div class="metric-top"><span>Admin</span><i class="red">★</i></div><strong><?= $roleCounts['Admin'] ?? 0 ?></strong><small>Quản trị viên</small></article>
-                <article class="metric"><div class="metric-top"><span>Thủ kho</span><i class="green">▣</i></div><strong><?= $roleCounts['Thủ kho'] ?? 0 ?></strong><small>Quản lý kho</small></article>
-                <article class="metric"><div class="metric-top"><span>Người nhận hàng</span><i class="orange">↙</i></div><strong><?= $roleCounts['Người nhận hàng'] ?? 0 ?></strong><small>Tiếp nhận hàng hóa</small></article>
+                <article class="metric"><div class="metric-top"><span>Tổng tài khoản</span><i class="blue"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#users"></use></svg></i></div><strong><?= count($users) ?></strong><small>Toàn hệ thống</small></article>
+                <article class="metric"><div class="metric-top"><span>Admin</span><i class="red"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#shield"></use></svg></i></div><strong><?= $roleCounts['Admin'] ?? 0 ?></strong><small>Quản trị viên</small></article>
+                <article class="metric"><div class="metric-top"><span>Thủ kho</span><i class="green"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#warehouse"></use></svg></i></div><strong><?= $roleCounts['Thủ kho'] ?? 0 ?></strong><small>Quản lý kho</small></article>
+                <article class="metric"><div class="metric-top"><span>Người nhận hàng</span><i class="orange"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#user"></use></svg></i></div><strong><?= $roleCounts['Người nhận hàng'] ?? 0 ?></strong><small>Tiếp nhận hàng hóa</small></article>
             </section>
             <dialog class="account-dialog" id="account-dialog" aria-labelledby="account-dialog-title">
             <section class="account-form-panel">
-                <div class="panel-heading"><span class="dialog-icon" aria-hidden="true">♙</span><div class="dialog-heading-copy"><span class="dialog-kicker">QUẢN LÝ NGƯỜI DÙNG</span><h3 id="account-dialog-title"><?= $editUser ? 'Cập nhật tài khoản' : 'Thêm tài khoản mới' ?></h3><p><?= $editUser ? 'Chỉnh sửa thông tin và quyền truy cập' : 'Tạo tài khoản để cấp quyền truy cập hệ thống' ?></p></div><button type="button" class="dialog-close" id="close-account-dialog" aria-label="Đóng cửa sổ">×</button></div>
+                <div class="panel-heading"><span class="dialog-icon" aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#users"></use></svg></span><div class="dialog-heading-copy"><span class="dialog-kicker">QUẢN LÝ NGƯỜI DÙNG</span><h3 id="account-dialog-title"><?= $editUser ? 'Cập nhật tài khoản' : 'Thêm tài khoản mới' ?></h3><p><?= $editUser ? 'Chỉnh sửa thông tin và quyền truy cập' : 'Tạo tài khoản để cấp quyền truy cập hệ thống' ?></p></div><button type="button" class="dialog-close" id="close-account-dialog" aria-label="Đóng cửa sổ"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#close"></use></svg></button></div>
                 <?php if ($notice && $notice[0] === 'error'): ?><div class="account-notice dialog-notice" role="alert"><?= accountEsc($notice[1]) ?></div><?php endif; ?>
                 <form method="post" action="accounts/index.php" class="account-form">
                     <?= csrfTokenField() ?>
@@ -284,5 +287,6 @@ if (window.Swal) {
 }
 <?php endif; ?>
 </script>
+<script src="assets/js/shared/theme.js" defer></script>
 </body>
 </html>

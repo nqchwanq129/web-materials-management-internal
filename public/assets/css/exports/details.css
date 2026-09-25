@@ -2,7 +2,7 @@
 
 /* Background trang */
 body {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: linear-gradient(135deg, #f6f6f9 0%, #cbc7de 100%);
     min-height: 100vh;
 }
 
@@ -26,7 +26,7 @@ body {
 }
 
 .main-content h2 {
-    color: #2c3e50;
+    color: #36314b;
     font-weight: 700;
     margin-bottom: 30px;
     font-size: 28px;
@@ -39,49 +39,49 @@ body {
     border-radius: 12px;
     margin-bottom: 24px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.07);
-    border: 1px solid #e1e8ed;
+    border: 1px solid #e4e3eb;
     overflow: hidden;
 }
-.section-header { 
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #fff; 
-    padding: 20px 24px; 
+.section-header {
+    background: linear-gradient(135deg, #8a78d8 0%, #764ba2 100%);
+    color: #fff;
+    padding: 20px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-.section-header h3 { 
-    margin: 0; 
-    font-size: 18px; 
-    font-weight: 600; 
+.section-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
     color: white;
 }
 .section-content { padding: 24px; }
 
 /* Form styles - cải thiện */
-.invoice-form .form-row { 
-    display: flex; 
-    gap: 40px; 
+.invoice-form .form-row {
+    display: flex;
+    gap: 40px;
 }
-.invoice-form .form-column { 
-    flex: 1; 
+.invoice-form .form-column {
+    flex: 1;
 }
-.invoice-form .form-group { 
-    margin-bottom: 20px; 
+.invoice-form .form-group {
+    margin-bottom: 20px;
 }
-.invoice-form label { 
-    display: block; 
-    font-weight: 600; 
-    margin-bottom: 8px; 
-    color: #2c3e50; 
+.invoice-form label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #36314b;
     font-size: 14px;
 }
-.invoice-form input[readonly] { 
-    width: 100%; 
-    padding: 12px 16px; 
-    border: 2px solid #e1e8ed; 
-    border-radius: 8px; 
-    background: #f8f9fa; 
+.invoice-form input[readonly] {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e4e3eb;
+    border-radius: 8px;
+    background: #f9f8fa;
     color: #6c757d;
     font-weight: 500;
 }
@@ -94,12 +94,12 @@ select,
 textarea {
     width: 100%;
     padding: 12px 16px;
-    border: 2px solid #e1e8ed;
+    border: 2px solid #e4e3eb;
     border-radius: 8px;
     font-size: 14px;
     transition: all 0.3s ease;
-    background: #fafbfc;
-    color: #2c3e50;
+    background: #fbfafc;
+    color: #36314b;
 }
 
 input[type="text"]:focus,
@@ -108,48 +108,48 @@ input[type="date"]:focus,
 select:focus,
 textarea:focus {
     outline: none;
-    border-color: #007bff;
+    border-color: #5339c6;
     background: white;
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
 
 /* Form inputs - cải thiện */
-.form-input { 
-    width: 100%; 
-    padding: 12px 16px; 
-    border: 2px solid #e1e8ed; 
-    border-radius: 8px; 
-    font-size: 14px; 
-    background: #fafbfc;
-    color: #2c3e50;
+.form-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e4e3eb;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #fbfafc;
+    color: #36314b;
     transition: all 0.3s ease;
 }
 
-.form-input:focus { 
-    outline: none; 
-    border-color: #007bff; 
+.form-input:focus {
+    outline: none;
+    border-color: #5339c6;
     background: white;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1); 
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
-.form-input.amount { 
-    text-align: left; 
-    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; 
+.form-input.amount {
+    text-align: left;
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
     font-weight: 600;
 }
-.form-input.center { 
-    text-align: center; 
+.form-input.center {
+    text-align: center;
 }
 
 /* Date input - cải thiện */
-.date-input-container { 
-    position: relative; 
+.date-input-container {
+    position: relative;
 }
-.date-input-container .calendar-icon { 
-    position: absolute; 
-    right: 12px; 
-    top: 50%; 
-    transform: translateY(-50%); 
-    pointer-events: none; 
+.date-input-container .calendar-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
     color: #6c757d;
     font-size: 16px;
 }
@@ -170,12 +170,12 @@ textarea:focus {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    background: linear-gradient(135deg, #5339c6 0%, #3a288b 100%);
     color: #fff;
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+    background: linear-gradient(135deg, #3a288b 0%, #2b1e67 100%);
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
@@ -186,7 +186,7 @@ textarea:focus {
 }
 
 .btn-success:hover {
-    background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
+    background: linear-gradient(135deg, #20c997 0%, #432fa0 100%);
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
@@ -203,12 +203,12 @@ textarea:focus {
 }
 
 .btn-info {
-    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    background: linear-gradient(135deg, #432fa0 0%, #372683 100%);
     color: #fff;
 }
 
 .btn-info:hover {
-    background: linear-gradient(135deg, #138496 0%, #117a8b 100%);
+    background: linear-gradient(135deg, #372683 0%, #332379 100%);
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
@@ -219,13 +219,13 @@ textarea:focus {
 }
 
 /* Action section - cải thiện */
-.action-section { 
-    margin-top: 20px; 
-    padding: 24px; 
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
-    border-radius: 12px; 
-    text-align: center; 
-    border: 1px solid #e1e8ed;
+.action-section {
+    margin-top: 20px;
+    padding: 24px;
+    background: linear-gradient(135deg, #f9f8fa 0%, #ebeaee 100%);
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid #e4e3eb;
     display: flex;
     justify-content: center;
     gap: 15px;
@@ -233,54 +233,54 @@ textarea:focus {
 }
 
 /* Alert messages - cải thiện */
-.alert { 
-    padding: 16px 20px; 
-    border-radius: 8px; 
-    margin-bottom: 20px; 
-    font-weight: 500; 
+.alert {
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 500;
     border-left: 4px solid;
 }
-.alert-success { 
-    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); 
-    color: #155724; 
+.alert-success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
     border-left-color: #28a745;
 }
-.alert-danger { 
-    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); 
-    color: #721c24; 
+.alert-danger {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    color: #721c24;
     border-left-color: #dc3545;
 }
 
 /* Table styles - cải thiện */
-.table-container { 
-    overflow-x: auto; 
+.table-container {
+    overflow-x: auto;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
-.goods-table { 
-    width: 100%; 
-    border-collapse: collapse; 
-    background: #fff; 
-    border-radius: 8px; 
-    overflow: hidden; 
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+.goods-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     table-layout: fixed;
 }
-.goods-table th, .goods-table td { 
-    padding: 16px 12px; 
-    border-bottom: 1px solid #e1e8ed; 
-    font-size: 14px; 
+.goods-table th, .goods-table td {
+    padding: 16px 12px;
+    border-bottom: 1px solid #e4e3eb;
+    font-size: 14px;
     word-wrap: break-word;
     vertical-align: middle;
 }
-.goods-table th { 
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
-    font-weight: 600; 
-    color: #2c3e50; 
+.goods-table th {
+    background: linear-gradient(135deg, #f9f8fa 0%, #ebeaee 100%);
+    font-weight: 600;
+    color: #36314b;
     text-transform: none;
     font-size: 13px;
     letter-spacing: 0.2px;
-    border-bottom: 2px solid #dee2e6;
+    border-bottom: 2px solid #e0dfe5;
 }
 
 .goods-table tbody tr {
@@ -288,71 +288,71 @@ textarea:focus {
 }
 
 .goods-table tbody tr:hover {
-    background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);
+    background: linear-gradient(135deg, #fafafd 0%, #ebe8f8 100%);
     transform: scale(1.01);
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .goods-table tbody tr:nth-child(even) {
-    background: #fafbfc;
+    background: #fbfafc;
 }
 
 .goods-table tbody tr:nth-child(even):hover {
-    background: linear-gradient(135deg, #f8f9ff 0%, #e3f2fd 100%);
+    background: linear-gradient(135deg, #fafafd 0%, #ebe8f8 100%);
 }
 
-.goods-table .amount { 
-    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; 
+.goods-table .amount {
+    font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
     font-weight: 600;
-    color: #2c3e50;
+    color: #36314b;
     text-align: right;
 }
-.goods-table .center { 
-    text-align: center; 
+.goods-table .center {
+    text-align: center;
     font-weight: 600;
-    color: #495057;
+    color: #4d4b55;
 }
 
 /* Căn chỉnh các cột cụ thể - cải thiện */
 .goods-table th:nth-child(1), /* Hàng hóa */
-.goods-table td:nth-child(1) { 
-    text-align: left; 
+.goods-table td:nth-child(1) {
+    text-align: left;
     width: 25%;
 }
 
 .goods-table th:nth-child(2), /* Loại */
-.goods-table td:nth-child(2) { 
-    text-align: left; 
+.goods-table td:nth-child(2) {
+    text-align: left;
     width: 15%;
 }
 
 .goods-table th:nth-child(3), /* Đơn vị tính */
-.goods-table td:nth-child(3) { 
-    text-align: center; 
+.goods-table td:nth-child(3) {
+    text-align: center;
     width: 12%;
 }
 
 .goods-table th:nth-child(4), /* Đơn giá */
-.goods-table td:nth-child(4) { 
-    text-align: center; 
+.goods-table td:nth-child(4) {
+    text-align: center;
     width: 15%;
 }
 
 .goods-table th:nth-child(5), /* Số lượng */
-.goods-table td:nth-child(5) { 
-    text-align: center; 
+.goods-table td:nth-child(5) {
+    text-align: center;
     width: 12%;
 }
 
 .goods-table th:nth-child(6), /* Thành tiền */
-.goods-table td:nth-child(6) { 
-    text-align: right; 
+.goods-table td:nth-child(6) {
+    text-align: right;
     width: 15%;
 }
 
 .goods-table th:nth-child(7), /* Thao tác */
-.goods-table td:nth-child(7) { 
-    text-align: center; 
+.goods-table td:nth-child(7) {
+    text-align: center;
     width: 6%;
 }
 
@@ -360,7 +360,7 @@ textarea:focus {
 .form-actions {
     text-align: right;
     padding-top: 20px;
-    border-top: 1px solid #e1e8ed;
+    border-top: 1px solid #e4e3eb;
     margin-top: 20px;
 }
 
@@ -370,9 +370,9 @@ textarea:focus {
     color: #6c757d;
     font-style: italic;
     padding: 40px 20px;
-    background: #f8f9fa;
+    background: #f9f8fa;
     border-radius: 8px;
-    border: 2px dashed #dee2e6;
+    border: 2px dashed #e0dfe5;
     font-size: 16px;
 }
 
@@ -382,19 +382,19 @@ textarea:focus {
         flex-direction: column;
         gap: 20px;
     }
-    
+
     .goods-table th,
     .goods-table td {
         padding: 12px 8px;
         font-size: 13px;
     }
-    
+
     .btn {
         margin: 3px;
         padding: 10px 20px;
         font-size: 13px;
     }
-    
+
     .action-section {
         flex-direction: column;
         align-items: center;
@@ -462,17 +462,17 @@ textarea:focus {
 .date-picker {
     width: 100%;
     padding: 12px 16px;
-    border: 2px solid #e1e8ed;
+    border: 2px solid #e4e3eb;
     border-radius: 8px;
     font-size: 14px;
     transition: all 0.3s ease;
-    background: #fafbfc;
-    color: #2c3e50;
+    background: #fbfafc;
+    color: #36314b;
 }
 
 .date-picker:focus {
     outline: none;
-    border-color: #007bff;
+    border-color: #5339c6;
     background: white;
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }

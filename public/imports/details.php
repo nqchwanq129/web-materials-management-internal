@@ -69,29 +69,32 @@ $name = $_SESSION['full_name'] ?? $_SESSION['username'] ?? 'Người dùng';
     <link rel="stylesheet" href="assets/css/dashboard/admin.css">
     <link rel="stylesheet" href="assets/css/imports/details.css">
 
+    <link rel="stylesheet" href="assets/css/shared/icons.css">
+    <link rel="stylesheet" href="assets/css/shared/theme.css">
 </head>
 <body>
+<a class="skip-link" href="<?= htmlspecialchars($_SERVER['REQUEST_URI'] ?? basename(__DIR__) . '/' . basename(__FILE__), ENT_QUOTES, 'UTF-8') ?>#main-content">Đến nội dung chính</a>
 <div class="dashboard">
     <aside class="sidebar" id="dashboard-sidebar">
-        <a class="brand" href="<?= $home ?>"><span class="brand-mark">V</span><span>VISHIPEL</span></a>
+        <a class="brand" href="<?= $home ?>"><img src="assets/images/company-logo.png" alt="VISHIPEL" width="500" height="500"></a>
         <div class="nav-label">TỔNG QUAN</div>
         <nav class="nav" aria-label="Điều hướng chính">
-            <a href="<?= $home ?>"><span aria-hidden="true">▦</span>Bảng điều khiển</a>
-            <a href="reports/statistics.php"><span aria-hidden="true">▥</span>Thống kê</a>
+            <a href="<?= $home ?>"><span aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#dashboard"></use></svg></span>Bảng điều khiển</a>
+            <a href="reports/statistics.php"><span aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#chart"></use></svg></span>Thống kê</a>
             <div class="nav-label">QUẢN LÝ KHO</div>
-            <a href="products/index.php"><span aria-hidden="true">◫</span>Hàng hóa</a>
-            <a class="active" aria-current="page" href="imports/index.php"><span aria-hidden="true">↙</span>Phiếu nhập kho</a>
-            <a href="imports/create.php"><span aria-hidden="true">＋</span>Tạo phiếu nhập</a>
-            <a href="exports/index.php"><span aria-hidden="true">↗</span>Phiếu xuất kho</a>
-            <a href="exports/create.php"><span aria-hidden="true">＋</span>Tạo phiếu xuất</a>
-            <?php if ($_SESSION['role'] === 'Admin'): ?><div class="nav-label">HỆ THỐNG</div><a href="accounts/index.php"><span aria-hidden="true">♙</span>Tài khoản</a><?php endif; ?>
+            <a href="products/index.php"><span aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#package"></use></svg></span>Hàng hóa</a>
+            <a class="active" aria-current="page" href="imports/index.php"><span aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#import"></use></svg></span>Phiếu nhập kho</a>
+            <a href="imports/create.php"><span aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#file-plus"></use></svg></span>Tạo phiếu nhập</a>
+            <a href="exports/index.php"><span aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#export"></use></svg></span>Phiếu xuất kho</a>
+            <a href="exports/create.php"><span aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#file-plus"></use></svg></span>Tạo phiếu xuất</a>
+            <?php if ($_SESSION['role'] === 'Admin'): ?><div class="nav-label">HỆ THỐNG</div><a href="accounts/index.php"><span aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#users"></use></svg></span>Tài khoản</a><?php endif; ?>
         </nav>
-        <div class="sidebar-user"><span class="avatar" aria-hidden="true">V</span><span><strong><?= importEsc($name) ?></strong><small><?= importEsc($_SESSION['role']) ?></small></span><a href="auth/log-out.php" aria-label="Đăng xuất" title="Đăng xuất">⇥</a></div>
+        <div class="sidebar-user"><span class="avatar" aria-hidden="true">V</span><span><strong><?= importEsc($name) ?></strong><small><?= importEsc($_SESSION['role']) ?></small></span><a href="auth/log-out.php" aria-label="Đăng xuất" title="Đăng xuất"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#logout"></use></svg></a></div>
     </aside>
     <div class="content-shell">
-        <header class="topbar"><div class="topbar-left"><button class="menu-toggle" type="button" aria-controls="dashboard-sidebar" aria-expanded="false" aria-label="Mở menu">☰</button><div><span class="breadcrumb">Phiếu nhập kho / Chi tiết</span><h1>Chi tiết phiếu nhập kho</h1></div></div><div class="topbar-actions"><span><?= date('d/m/Y') ?></span><span class="top-avatar" aria-hidden="true">V</span></div></header>
-        <main class="main-content">
-            <a class="back-link" href="imports/index.php">← Danh sách phiếu nhập kho</a>
+        <header class="topbar"><div class="topbar-left"><button class="menu-toggle" type="button" aria-controls="dashboard-sidebar" aria-expanded="false" aria-label="Mở menu"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#menu"></use></svg></button><div><span class="breadcrumb">Phiếu nhập kho / Chi tiết</span><h1>Chi tiết phiếu nhập kho</h1></div></div><div class="topbar-actions"><span><?= date('d/m/Y') ?></span><span class="top-avatar" aria-hidden="true">V</span></div></header>
+        <main class="main-content" id="main-content" tabindex="-1">
+            <a class="back-link" href="imports/index.php"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#arrow-left"></use></svg> Danh sách phiếu nhập kho</a>
             <div class="page-intro"><div><span class="eyebrow">CHI TIẾT PHIẾU NHẬP</span><h2>Hóa đơn <?= importEsc($importBill['so_hoa_don']) ?></h2><p>Kiểm tra thông tin, hàng hóa và chứng từ của phiếu nhập.</p></div><a href="imports/export-excel.php?id=<?= (int) $billId ?>" class="btn btn-success">Xuất Excel</a></div>
             <div class="receipt-summary"><div><span>Ngày nhập</span><strong><?= date('d/m/Y', strtotime($importBill['ngay_nhap'])) ?></strong></div><div><span>Số mặt hàng</span><strong><?= count($products) ?></strong></div><div><span>Tổng tiền đã lưu (VNĐ)</span><strong><?= importEsc(formatVnAmount($importBill['tong_tien'])) ?></strong></div></div>
             <nav class="section-links" aria-label="Các phần của phiếu"><a href="imports/details.php?id=<?= (int) $billId ?>#invoice-info">Thông tin phiếu</a><a href="imports/details.php?id=<?= (int) $billId ?>#goods">Hàng hóa</a><a href="imports/details.php?id=<?= (int) $billId ?>#documents">Chứng từ PDF</a></nav>
@@ -99,13 +102,13 @@ $name = $_SESSION['full_name'] ?? $_SESSION['username'] ?? 'Người dùng';
             <div id="save-notice" role="status" aria-live="polite"></div>
             <?php if (isset($success_message)): ?>
                 <div class="alert alert-success" style="background: #d4edda; color: #155724; padding: 12px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #c3e6cb;">
-                    ✅ <?php echo htmlspecialchars($success_message); ?>
+                    <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#check-circle"></use></svg> <?php echo htmlspecialchars($success_message); ?>
                 </div>
             <?php endif; ?>
 
             <?php if (isset($error_message)): ?>
                 <div class="alert alert-danger" style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #f5c6cb;">
-                    ❌ <?php echo htmlspecialchars($error_message); ?>
+                    <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#error"></use></svg> <?php echo htmlspecialchars($error_message); ?>
                 </div>
             <?php endif; ?>
 
@@ -178,12 +181,12 @@ $name = $_SESSION['full_name'] ?? $_SESSION['username'] ?? 'Người dùng';
                     $pdf_exists = is_string($pdf_file_path) && preg_match('~^uploads/invoices/[a-zA-Z0-9_.-]+\.pdf$~D', $pdf_file_path) && is_file($pdf_file_path);
                     ?>
                     <!-- Form upload PDF mới - luôn hiển thị để có thể thay thế PDF cũ -->
-                    <div class="pdf-upload-section" style="margin-bottom: 20px; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 2px dashed #dee2e6;">
-                        <h4 style="margin-top: 0; color: #495057;">
+                    <div class="pdf-upload-section" style="margin-bottom: 20px; padding: 20px; background: #f9f8fa; border-radius: 8px; border: 2px dashed #e0dfe5;">
+                        <h4 style="margin-top: 0; color: #4d4b55;">
                             <?php if ($pdf_exists): ?>
-                                📄 Thay thế hóa đơn PDF hiện tại
+                                <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#file"></use></svg> Thay thế hóa đơn PDF hiện tại
                             <?php else: ?>
-                                📄 Tải lên hóa đơn PDF
+                                <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#file"></use></svg> Tải lên hóa đơn PDF
                             <?php endif; ?>
                         </h4>
                         <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
@@ -205,7 +208,7 @@ $name = $_SESSION['full_name'] ?? $_SESSION['username'] ?? 'Người dùng';
                         </details>
                     <?php else: ?>
                         <div class="pdf-placeholder">
-                            <i class="fas fa-file-pdf"></i>
+                            <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#file"></use></svg>
                             <p>Chưa có hóa đơn PDF</p>
                         </div>
                     <?php endif; ?>
@@ -226,7 +229,7 @@ $name = $_SESSION['full_name'] ?? $_SESSION['username'] ?? 'Người dùng';
                         <div class="goods-container">
                             <div class="goods-cards">
                                     <?php foreach ($products as $productIndex => $product): ?>
-                                        <article class="goods-card"><div class="goods-card-heading"><span class="item-index"><?= $productIndex + 1 ?></span><h4><?= importEsc($product['ten_san_pham']) ?></h4><a href="products/details.php?id=<?= (int) $product['id'] ?>">Xem hàng hóa ↗</a></div><div class="goods-fields">
+                                        <article class="goods-card"><div class="goods-card-heading"><span class="item-index"><?= $productIndex + 1 ?></span><h4><?= importEsc($product['ten_san_pham']) ?></h4><a href="products/details.php?id=<?= (int) $product['id'] ?>">Xem hàng hóa <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#external"></use></svg></a></div><div class="goods-fields">
                                             <div class="goods-field "><label class="field-label">Hàng hóa</label>
 <input form="save-form" type="text" name="products[<?php echo $product['id']; ?>][ten_san_pham]"
                                                        value="<?php echo htmlspecialchars($product['ten_san_pham']); ?>"
@@ -338,8 +341,8 @@ $name = $_SESSION['full_name'] ?? $_SESSION['username'] ?? 'Người dùng';
         <div class="lightbox">
             <img id="lb-img" src="" alt="preview">
             <div class="lightbox-nav">
-                <button class="lightbox-btn" id="lb-prev">← Trước</button>
-                <button class="lightbox-btn" id="lb-next">Tiếp →</button>
+                <button class="lightbox-btn" id="lb-prev"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#arrow-left"></use></svg> Trước</button>
+                <button class="lightbox-btn" id="lb-next">Tiếp <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#arrow-right"></use></svg></button>
                 <button class="lightbox-btn" id="lb-close">Đóng</button>
             </div>
         </div>
@@ -690,5 +693,6 @@ $name = $_SESSION['full_name'] ?? $_SESSION['username'] ?? 'Người dùng';
             });
         }
     </script>
+<script src="assets/js/shared/theme.js" defer></script>
 </body>
 </html>

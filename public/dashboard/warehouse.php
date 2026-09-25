@@ -13,10 +13,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Thủ kho') {
 $stmt = $pdo->query("SELECT COUNT(*) as total_products FROM products");
 $total_products = $stmt->fetch()['total_products'];
 
-$stmt = $pdo->query("SELECT SUM(so_luong_con_lai) as total_quantity FROM products");
-$total_quantity = $stmt->fetch()['total_quantity'] ?: 0;
-
-$stmt = $pdo->query("SELECT COUNT(*) as low_stock FROM products WHERE so_luong_con_lai < 10");
+$stmt = $pdo->query("SELECT COUNT(*) as low_stock FROM products WHERE so_luong_con_lai > 0 AND so_luong_con_lai < 10");
 $low_stock = $stmt->fetch()['low_stock'];
 ?>
 
@@ -27,59 +24,29 @@ $low_stock = $stmt->fetch()['low_stock'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thủ kho - Phần mềm Quản Lý Kho</title>
-    <link rel="stylesheet" href="assets/css/shared/layout.css">
-               <link rel="stylesheet" href="assets/css/dashboard/warehouse.css">
+    <link rel="stylesheet" href="assets/css/dashboard/admin.css">
+
+    <link rel="stylesheet" href="assets/css/shared/icons.css">
+    <link rel="stylesheet" href="assets/css/shared/theme.css">
 </head>
-<body>
-    <div class="header">
-        <div class="logo">
-            <img src="assets/images/company-logo.png" alt="Vishipel Logo">
-            <div class="logo-text">
-                <h1>PHẦN MỀM QUẢN LÝ KHO VISHIPEL</h1>
-                <p>CÔNG TY TNHH MTV THÔNG TIN ĐIỆN TỬ HÀNG HẢI VIỆT NAM</p>
-            </div>
-        </div>
-        <div class="user-info">
-            <span class="greeting">Xin chào <?php echo htmlspecialchars($_SESSION['full_name']); ?></span>
-            <a href="auth/log-out.php" class="logout-btn">Đăng xuất</a>
+<body class="migrated-page">
+<a class="skip-link" href="<?= htmlspecialchars($_SERVER['REQUEST_URI'] ?? basename(__DIR__) . '/' . basename(__FILE__), ENT_QUOTES, 'UTF-8') ?>#main-content">Đến nội dung chính</a>
+<?php $shellTitle = 'Bảng điều khiển'; $shellActive = 'dashboard/warehouse.php'; require __DIR__ . '/../../app/views/shell-start.php'; ?>
+
+            <section class="warehouse-intro"><div><h2>Công việc kho hôm nay</h2><p>Theo dõi tồn kho, tiếp nhận hàng hóa và lập phiếu xuất từ một nơi.</p></div><a class="btn" href="imports/create.php">Tạo phiếu nhập</a></section>
+            <section class="metrics warehouse-metrics" aria-label="Tổng quan kho">
+                <article class="metric"><div class="metric-top"><span>Hàng hóa</span></div><strong><?= number_format((int) $total_products, 0, ',', '.') ?></strong><small>Danh mục đang quản lý</small></article>
+                <article class="metric"><div class="metric-top"><span>Sắp hết hàng</span></div><strong><?= number_format((int) $low_stock, 0, ',', '.') ?></strong><small>Tồn từ 1 đến 9 đơn vị</small></article>
+            </section>
+            <section class="warehouse-shortcuts" aria-label="Thao tác nhanh">
+                <a href="products/index.php"><svg class="ui-icon" aria-hidden="true"><use href="assets/icons.svg#package"></use></svg><strong>Tra cứu hàng hóa</strong><p>Xem số lượng tồn, hình ảnh và lịch sử nhập xuất.</p></a>
+                <a href="imports/index.php"><svg class="ui-icon" aria-hidden="true"><use href="assets/icons.svg#import"></use></svg><strong>Phiếu nhập kho</strong><p>Kiểm tra và quản lý các đợt tiếp nhận hàng.</p></a>
+                <a href="exports/create.php"><svg class="ui-icon" aria-hidden="true"><use href="assets/icons.svg#export"></use></svg><strong>Tạo phiếu xuất</strong><p>Chọn hàng hóa, số lượng và người nhận.</p></a>
+            </section>
+
         </div>
     </div>
-
-    <div class="container">
-        <div class="sidebar">
-            <ul class="menu">
-                <li class="active"><a href="reports/statistics.php">Số liệu thống kê</a></li>
-                <li>Nhập hàng hóa
-                    <ul>
-                        <li><a href="imports/create.php">Nhập hóa đơn</a></li>
-                        <li><a href="imports/index.php">DS phiếu nhập kho</a></li>
-                    </ul>
-                </li>
-                <li>Xuất hàng hóa
-                    <ul>
-                        <li><a href="exports/create.php">Xuất hóa đơn</a></li>
-                        <li><a href="exports/index.php">DS phiếu xuất kho</a></li>
-                    </ul>
-                </li>
-                <li>Danh Sách Hàng Hóa
-                    <ul>
-                        <li><a href="products/index.php">Tất Cả Hàng Hóa</a></li>
-                        <li><a href="products/index.php?type=cong-cu">Công Cụ Dụng Cụ</a></li>
-                        <li><a href="products/index.php?type=vat-tu">Vật Tư</a></li>
-                        <li><a href="products/index.php?type=tai-san">Tài Sản Cố Định</a></li>
-                        <li><a href="products/index.php?type=phu-tung">Phụ Tùng Thay Thế</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-
-        <div class="main-content">
-            <div class="welcome-card">
-                <div class="role-badge">THỦ KHO</div>
-                <h2>Chào mừng Thủ kho!</h2>
-                <p>Bạn đã đăng nhập với quyền quản lý kho hàng.</p>
-            </div>
-        </div>
-    </div>
+</div>
+<script src="assets/js/shared/theme.js" defer></script>
 </body>
 </html>

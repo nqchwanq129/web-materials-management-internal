@@ -51,32 +51,15 @@ $exported_goods = $stmt->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Người Nhận Hàng - Phần mềm Quản Lý Kho</title>
-    <link rel="stylesheet" href="assets/css/shared/layout.css">
+    <link rel="stylesheet" href="assets/css/dashboard/admin.css">
                <link rel="stylesheet" href="assets/css/dashboard/receiving.css">
+    <link rel="stylesheet" href="assets/css/shared/icons.css">
+    <link rel="stylesheet" href="assets/css/shared/theme.css">
 </head>
-<body>
-    <div class="header">
-        <div class="logo">
-            <img src="assets/images/company-logo.png" alt="Vishipel Logo">
-            <div class="logo-text">
-                <h1>PHẦN MỀM QUẢN LÝ KHO VISHIPEL</h1>
-                <p>CÔNG TY TNHH MTV THÔNG TIN ĐIỆN TỬ HÀNG HẢI VIỆT NAM</p>
-            </div>
-        </div>
-        <div class="user-info">
-            <span class="greeting">Xin chào <?php echo htmlspecialchars($_SESSION['full_name']); ?></span>
-            <a href="auth/log-out.php" class="logout-btn">Đăng xuất</a>
-        </div>
-    </div>
+<body class="migrated-page">
+<a class="skip-link" href="<?= htmlspecialchars($_SERVER['REQUEST_URI'] ?? basename(__DIR__) . '/' . basename(__FILE__), ENT_QUOTES, 'UTF-8') ?>#main-content">Đến nội dung chính</a>
+<?php $shellTitle = 'Hàng đã nhận'; $shellActive = 'dashboard/receiving.php'; require __DIR__ . '/../../app/views/shell-start.php'; ?>
 
-    <div class="container">
-        <div class="sidebar">
-            <ul class="menu">
-                                       <li class="active"><a href="dashboard/receiving.php">Danh Sách Hàng Nhận</a></li>
-            </ul>
-        </div>
-
-        <div class="main-content">
             <h2>Danh Sách Hàng Nhận</h2>
 
             <!-- Tìm kiếm hàng hóa -->
@@ -147,5 +130,7 @@ $exported_goods = $stmt->fetchAll();
             </div>
         </div>
     </div>
+</div>
+<script src="assets/js/shared/theme.js" defer></script>
 </body>
 </html>

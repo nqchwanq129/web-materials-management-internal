@@ -20,36 +20,39 @@ $name = $_SESSION['full_name'] ?? $_SESSION['username'] ?? 'Người dùng';
     <title>Nhập hàng hóa | VISHIPEL</title>
     <link rel="stylesheet" href="assets/css/dashboard/admin.css">
     <link rel="stylesheet" href="assets/css/imports/create.css">
+    <link rel="stylesheet" href="assets/css/shared/icons.css">
+    <link rel="stylesheet" href="assets/css/shared/theme.css">
 </head>
 <body>
+<a class="skip-link" href="<?= htmlspecialchars($_SERVER['REQUEST_URI'] ?? basename(__DIR__) . '/' . basename(__FILE__), ENT_QUOTES, 'UTF-8') ?>#main-content">Đến nội dung chính</a>
 <div class="dashboard">
     <aside class="sidebar" id="dashboard-sidebar">
-        <a class="brand" href="<?= $home ?>"><span class="brand-mark">V</span><span>VISHIPEL</span></a>
+        <a class="brand" href="<?= $home ?>"><img src="assets/images/company-logo.png" alt="VISHIPEL" width="500" height="500"></a>
         <div class="nav-label">TỔNG QUAN</div>
         <nav class="nav" aria-label="Điều hướng chính">
-            <a href="<?= $home ?>"><span aria-hidden="true">▦</span>Bảng điều khiển</a>
-            <a href="reports/statistics.php"><span aria-hidden="true">▥</span>Thống kê</a>
+            <a href="<?= $home ?>"><span aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#dashboard"></use></svg></span>Bảng điều khiển</a>
+            <a href="reports/statistics.php"><span aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#chart"></use></svg></span>Thống kê</a>
             <div class="nav-label">QUẢN LÝ KHO</div>
-            <a href="products/index.php"><span aria-hidden="true">◫</span>Hàng hóa</a>
-            <a href="imports/index.php"><span aria-hidden="true">↙</span>Phiếu nhập kho</a>
-            <a class="active" aria-current="page" href="imports/create.php"><span aria-hidden="true">＋</span>Tạo phiếu nhập</a>
-            <a href="exports/index.php"><span aria-hidden="true">↗</span>Phiếu xuất kho</a>
-            <a href="exports/create.php"><span aria-hidden="true">＋</span>Tạo phiếu xuất</a>
-            <?php if ($_SESSION['role'] === 'Admin'): ?><div class="nav-label">HỆ THỐNG</div><a href="accounts/index.php"><span aria-hidden="true">♙</span>Tài khoản</a><?php endif; ?>
+            <a href="products/index.php"><span aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#package"></use></svg></span>Hàng hóa</a>
+            <a href="imports/index.php"><span aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#import"></use></svg></span>Phiếu nhập kho</a>
+            <a class="active" aria-current="page" href="imports/create.php"><span aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#file-plus"></use></svg></span>Tạo phiếu nhập</a>
+            <a href="exports/index.php"><span aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#export"></use></svg></span>Phiếu xuất kho</a>
+            <a href="exports/create.php"><span aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#file-plus"></use></svg></span>Tạo phiếu xuất</a>
+            <?php if ($_SESSION['role'] === 'Admin'): ?><div class="nav-label">HỆ THỐNG</div><a href="accounts/index.php"><span aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#users"></use></svg></span>Tài khoản</a><?php endif; ?>
         </nav>
-        <div class="sidebar-user"><span class="avatar" aria-hidden="true">V</span><span><strong><?= importEsc($name) ?></strong><small><?= importEsc($_SESSION['role']) ?></small></span><a href="auth/log-out.php" aria-label="Đăng xuất" title="Đăng xuất">⇥</a></div>
+        <div class="sidebar-user"><span class="avatar" aria-hidden="true">V</span><span><strong><?= importEsc($name) ?></strong><small><?= importEsc($_SESSION['role']) ?></small></span><a href="auth/log-out.php" aria-label="Đăng xuất" title="Đăng xuất"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#logout"></use></svg></a></div>
     </aside>
     <div class="content-shell">
-        <header class="topbar"><div class="topbar-left"><button class="menu-toggle" type="button" aria-controls="dashboard-sidebar" aria-expanded="false" aria-label="Mở menu">☰</button><div><span class="breadcrumb">Quản lý kho / Phiếu nhập kho</span><h1>Nhập hàng hóa</h1></div></div><div class="topbar-actions"><span><?= date('d/m/Y') ?></span><span class="top-avatar" aria-hidden="true">V</span></div></header>
-<main class="main-content">
-<div class="page-intro"><div><h2>Nhập hàng hóa</h2><p>Tạo phiếu nhập, thêm hàng hóa và lưu chứng từ trong cùng một nơi.</p></div><a class="btn btn-secondary" href="imports/index.php">← Danh sách phiếu nhập</a></div>
+        <header class="topbar"><div class="topbar-left"><button class="menu-toggle" type="button" aria-controls="dashboard-sidebar" aria-expanded="false" aria-label="Mở menu"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#menu"></use></svg></button><div><span class="breadcrumb">Quản lý kho / Phiếu nhập kho</span><h1>Nhập hàng hóa</h1></div></div><div class="topbar-actions"><span><?= date('d/m/Y') ?></span><span class="top-avatar" aria-hidden="true">V</span></div></header>
+<main class="main-content" id="main-content" tabindex="-1">
+<div class="page-intro"><div><h2>Nhập hàng hóa</h2><p>Tạo phiếu nhập, thêm hàng hóa và lưu chứng từ trong cùng một nơi.</p></div><a class="btn btn-secondary" href="imports/index.php"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#arrow-left"></use></svg> Danh sách phiếu nhập</a></div>
 <div class="flow-guide"><span><b>1</b> Thông tin hóa đơn</span><span><b>2</b> Hàng hóa nhập kho</span><span><b>3</b> Kiểm tra & lưu</span></div>
 <div id="create-notice" role="status" aria-live="polite"></div>
 <noscript><p>Vui lòng bật JavaScript để thêm hàng hóa và lưu phiếu nhập.</p></noscript>
 <div class="entry-layout"><div class="entry-main">
             <!-- Phần Import Hóa Đơn XML -->
             <details class="section xml-shortcut">
-                <summary><span class="xml-mark" aria-hidden="true">↥</span><span><strong>Điền nhanh từ hóa đơn XML</strong><small>Tùy chọn · Mở để chọn tệp hóa đơn điện tử</small></span></summary>
+                <summary><span class="xml-mark" aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#upload"></use></svg></span><span><strong>Điền nhanh từ hóa đơn XML</strong><small>Tùy chọn · Mở để chọn tệp hóa đơn điện tử</small></span></summary>
                 <div class="section-header">
                     <h3>Có sẵn hóa đơn điện tử?</h3><p>Chọn XML để điền nhanh thông tin, hoặc nhập trực tiếp bên dưới.</p>
                 </div>
@@ -141,7 +144,7 @@ $name = $_SESSION['full_name'] ?? $_SESSION['username'] ?? 'Người dùng';
                     </table>
 
                     <div class="add-item-bar">
-                        <button type="button" id="btn-add-row" class="btn btn-primary">＋ Thêm hàng hóa</button>
+                        <button type="button" id="btn-add-row" class="btn btn-primary"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#plus"></use></svg> Thêm hàng hóa</button>
 
                     </div>
             </div>
@@ -432,5 +435,6 @@ $name = $_SESSION['full_name'] ?? $_SESSION['username'] ?? 'Người dùng';
             document.getElementById('pdf-file').value = ''; document.getElementById('xml-file').value = ''; document.querySelectorAll('.file-chosen').forEach(span => { span.textContent = 'Chưa chọn tệp'; });
         }
     </script>
+<script src="assets/js/shared/theme.js" defer></script>
 </body>
 </html>

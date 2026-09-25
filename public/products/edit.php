@@ -214,7 +214,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
     } catch (Exception $e) {
         $pdo->rollBack();
-        $errorMessage = "Lỗi khi cập nhật hàng hóa: " . $e->getMessage();
+        error_log('Product update failed: ' . $e->getMessage());
+        $errorMessage = $e instanceof PDOException ? 'Chưa thể lưu hàng hóa. Vui lòng thử lại.' : $e->getMessage();
     }
 }
 
@@ -230,16 +231,16 @@ $images = $stmt->fetchAll();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chỉnh Sửa Hàng Hóa - Admin</title>
-    <link rel="stylesheet" href="assets/css/shared/layout.css">
+    <link rel="stylesheet" href="assets/css/dashboard/admin.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <style>
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: linear-gradient(135deg, #f6f6f9 0%, #cbc7de 100%);
             min-height: 100vh;
         }
         
         .main-content h2 {
-            color: #2c3e50;
+            color: #36314b;
             font-weight: 700;
             margin-bottom: 25px;
             font-size: 26px;
@@ -250,12 +251,12 @@ $images = $stmt->fetchAll();
             border-radius: 12px;
             margin-bottom: 24px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.07);
-            border: 1px solid #e1e8ed;
+            border: 1px solid #e4e3eb;
             overflow: hidden;
         }
 
         .section-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #8a78d8 0%, #764ba2 100%);
             color: white;
             padding: 16px 20px;
             margin: 0;
@@ -291,7 +292,7 @@ $images = $stmt->fetchAll();
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: #2c3e50;
+            color: #36314b;
             font-size: 14px;
         }
 
@@ -304,11 +305,11 @@ $images = $stmt->fetchAll();
         .form-group textarea {
             width: 100%;
             padding: 10px 14px;
-            border: 1px solid #e1e8ed;
+            border: 1px solid #e4e3eb;
             border-radius: 8px;
             font-size: 14px;
-            background: #fafbfc;
-            color: #2c3e50;
+            background: #fbfafc;
+            color: #36314b;
             transition: all 0.3s ease;
             box-sizing: border-box;
         }
@@ -317,7 +318,7 @@ $images = $stmt->fetchAll();
         .form-group select:focus,
         .form-group textarea:focus {
             outline: none;
-            border-color: #007bff;
+            border-color: #5339c6;
             background: white;
             box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
         }
@@ -369,7 +370,7 @@ $images = $stmt->fetchAll();
 
         .btn-submit {
             padding: 12px 24px;
-            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            background: linear-gradient(135deg, #5339c6 0%, #3a288b 100%);
             color: white;
             border: none;
             border-radius: 8px;
@@ -381,17 +382,17 @@ $images = $stmt->fetchAll();
         }
 
         .btn-submit:hover {
-            background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+            background: linear-gradient(135deg, #3a288b 0%, #2b1e67 100%);
             transform: translateY(-2px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
 
         /* Image Grid & Upload styles */
         .image-gallery-section {
-            border: 1px solid #e1e8ed;
+            border: 1px solid #e4e3eb;
             border-radius: 8px;
             padding: 16px;
-            background: #fafbfc;
+            background: #fbfafc;
             margin-top: 10px;
         }
 
@@ -441,7 +442,7 @@ $images = $stmt->fetchAll();
         }
 
         .upload-area {
-            border: 2px dashed #dee2e6;
+            border: 2px dashed #e0dfe5;
             border-radius: 8px;
             padding: 24px;
             text-align: center;
@@ -451,8 +452,8 @@ $images = $stmt->fetchAll();
         }
 
         .upload-area:hover {
-            border-color: #007bff;
-            background: #f8f9fa;
+            border-color: #5339c6;
+            background: #f9f8fa;
         }
 
         .upload-icon {
@@ -462,7 +463,7 @@ $images = $stmt->fetchAll();
         }
 
         .upload-text {
-            color: #495057;
+            color: #4d4b55;
             font-size: 14px;
             font-weight: 600;
         }
@@ -489,67 +490,24 @@ $images = $stmt->fetchAll();
             cursor: pointer;
         }
     </style>
+    <link rel="stylesheet" href="assets/css/shared/icons.css">
+    <link rel="stylesheet" href="assets/css/shared/theme.css">
 </head>
-<body>
-    <button class="sidebar-toggle" id="sidebarToggle">☰</button>
-    <div class="header">
-        <div class="logo">
-            <img src="assets/images/company-logo.png" alt="Vishipel Logo">
-            <div class="logo-text">
-                <h1>PHẦN MỀM QUẢN LÝ KHO VISHIPEL</h1>
-                <p>CÔNG TY TNHH MTV THÔNG TIN ĐIỆN TỬ HÀNG HẢI VIỆT NAM</p>
-            </div>
-        </div>
-        <div class="user-info">
-            <span class="greeting">Xin chào <?php echo htmlspecialchars($_SESSION['full_name']); ?></span>
-            <a href="auth/log-out.php" class="logout-btn">Đăng xuất</a>
-        </div>
-    </div>
+<body class="migrated-page">
+<a class="skip-link" href="<?= htmlspecialchars($_SERVER['REQUEST_URI'] ?? basename(__DIR__) . '/' . basename(__FILE__), ENT_QUOTES, 'UTF-8') ?>#main-content">Đến nội dung chính</a>
+<?php $shellTitle = 'Chỉnh sửa hàng hóa'; $shellActive = 'products/index.php'; require __DIR__ . '/../../app/views/shell-start.php'; ?>
 
-    <div class="container">
-        <div class="sidebar">
-            <ul class="menu">
-                <li><a href="reports/statistics.php">Số liệu thống kê</a></li>
-                <?php if ($_SESSION['role'] === 'Admin'): ?>
-                <li><a href="accounts/index.php">Quản lý tài khoản</a></li>
-                <?php endif; ?>
-                <li>Nhập hàng hóa
-                    <ul>
-                        <li><a href="imports/create.php">Nhập hóa đơn</a></li>
-                        <li><a href="imports/index.php">DS phiếu nhập kho</a></li>
-                    </ul>
-                </li>
-                <li>Xuất hàng hóa
-                    <ul>
-                        <li><a href="exports/create.php">Xuất hóa đơn</a></li>
-                        <li><a href="exports/index.php">DS phiếu xuất kho</a></li>
-                    </ul>
-                </li>
-                <li class="active">Danh Sách Hàng Hóa
-                    <ul>
-                        <li class="<?php echo $p['loai'] === 'Tất cả' ? 'active' : ''; ?>"><a href="products/index.php">Tất Cả Hàng Hóa</a></li>
-                        <li class="<?php echo $p['loai'] === 'Công cụ dụng cụ' ? 'active' : ''; ?>"><a href="products/index.php?type=cong-cu">Công Cụ Dụng Cụ</a></li>
-                        <li class="<?php echo $p['loai'] === 'Vật tư' ? 'active' : ''; ?>"><a href="products/index.php?type=vat-tu">Vật Tư</a></li>
-                        <li class="<?php echo $p['loai'] === 'Tài sản cố định' ? 'active' : ''; ?>"><a href="products/index.php?type=tai-san">Tài Sản Cố Định</a></li>
-                        <li class="<?php echo $p['loai'] === 'Phụ tùng thay thế' ? 'active' : ''; ?>"><a href="products/index.php?type=phu-tung">Phụ Tùng Thay Thế</a></li>
-                        <li class="<?php echo $p['loai'] === 'Khác' ? 'active' : ''; ?>"><a href="products/index.php?type=khac">Khác</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-
-        <div class="main-content">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2>Chỉnh Sửa Hàng Hóa</h2>
-                <a href="javascript:history.back()" class="btn-back">← Quay lại</a>
+                <a href="javascript:history.back()" class="btn-back"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#arrow-left"></use></svg> Quay lại</a>
             </div>
 
             <?php if (!empty($successMessage)): ?>
-                <div class="alert alert-success">✅ <?php echo htmlspecialchars($successMessage); ?></div>
+                <div class="alert alert-success"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#check-circle"></use></svg> <?php echo htmlspecialchars($successMessage); ?></div>
             <?php endif; ?>
 
             <?php if (!empty($errorMessage)): ?>
-                <div class="alert alert-danger">❌ <?php echo htmlspecialchars($errorMessage); ?></div>
+                <div class="alert alert-danger"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#error"></use></svg> <?php echo htmlspecialchars($errorMessage); ?></div>
             <?php endif; ?>
 
             <div class="section">
@@ -643,16 +601,16 @@ $images = $stmt->fetchAll();
                                     <?php endif; ?>
 
                                     <div class="upload-area" onclick="document.getElementById('image-upload').click()">
-                                        <div class="upload-icon">📤</div>
+                                        <div class="upload-icon"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#upload"></use></svg></div>
                                         <div class="upload-text">Chọn hoặc kéo thả các ảnh mới tại đây</div>
                                         <div class="upload-subtext">Hỗ trợ JPG, JPEG, PNG, GIF dưới 5MB. Có thể chọn nhiều tệp.</div>
                                         <input type="file" id="image-upload" name="images[]" multiple accept="image/*" style="display:none" onchange="updateFileCountLabel(this)">
-                                        <div id="file-count-label" style="margin-top:8px; font-weight:600; color:#007bff; display:none;"></div>
+                                        <div id="file-count-label" style="margin-top:8px; font-weight:600; color:#5339c6; display:none;"></div>
                                     </div>
                                     
                                     <?php if (!empty($images)): ?>
                                         <label class="checkbox-container">
-                                            <input type="checkbox" name="delete_all_images" value="1"> ⚠️ Xóa toàn bộ ảnh cũ trước khi lưu ảnh mới
+                                            <input type="checkbox" name="delete_all_images" value="1"> <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#warning"></use></svg> Xóa toàn bộ ảnh cũ trước khi lưu ảnh mới
                                         </label>
                                     <?php endif; ?>
                                 </div>
@@ -660,17 +618,17 @@ $images = $stmt->fetchAll();
                         </div>
 
                         <div style="text-align: right; margin-top: 25px;">
-                            <button type="submit" class="btn-submit">💾 Lưu Thay Đổi</button>
+                            <button type="submit" class="btn-submit"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#save"></use></svg> Lưu Thay Đổi</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/vn.js"></script>
-    <script src="assets/js/shared/sidebar-toggle.js" defer></script>
     <script>
         // Khởi tạo Flatpickr tiếng Việt cho ô Ngày nhập
         (function(){
@@ -744,5 +702,6 @@ $images = $stmt->fetchAll();
             }
         });
     </script>
+<script src="assets/js/shared/theme.js" defer></script>
 </body>
 </html>

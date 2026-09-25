@@ -59,41 +59,44 @@ $name = detailEsc($_SESSION['full_name'] ?? $_SESSION['username'] ?? 'Người d
     <title><?= $notFound ? 'Không tìm thấy hàng hóa' : detailEsc($product['ten_san_pham']) ?> | VISHIPEL</title>
     <link rel="stylesheet" href="assets/css/dashboard/admin.css">
     <link rel="stylesheet" href="assets/css/products/details.css">
+    <link rel="stylesheet" href="assets/css/shared/icons.css">
+    <link rel="stylesheet" href="assets/css/shared/theme.css">
 </head>
 <body>
+<a class="skip-link" href="<?= htmlspecialchars($_SERVER['REQUEST_URI'] ?? basename(__DIR__) . '/' . basename(__FILE__), ENT_QUOTES, 'UTF-8') ?>#main-content">Đến nội dung chính</a>
 <div class="dashboard">
     <aside class="sidebar" id="dashboard-sidebar">
-        <a class="brand" href="<?= $home ?>"><span class="brand-mark">V</span><span>VISHIPEL</span></a>
+        <a class="brand" href="<?= $home ?>"><img src="assets/images/company-logo.png" alt="VISHIPEL" width="500" height="500"></a>
         <div class="nav-label">TỔNG QUAN</div>
         <nav class="nav" aria-label="Điều hướng chính">
-            <a href="<?= $home ?>"><span>▦</span>Bảng điều khiển</a>
-            <?php if ($canManage): ?><a href="reports/statistics.php"><span>▥</span>Thống kê</a><?php endif; ?>
+            <a href="<?= $home ?>"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#dashboard"></use></svg></span>Bảng điều khiển</a>
+            <?php if ($canManage): ?><a href="reports/statistics.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#chart"></use></svg></span>Thống kê</a><?php endif; ?>
             <?php if ($canManage): ?>
             <div class="nav-label">QUẢN LÝ KHO</div>
-            <a class="active" href="products/index.php"><span>◫</span>Hàng hóa</a>
-            <a href="imports/index.php"><span>↙</span>Phiếu nhập kho</a>
-            <a href="imports/create.php"><span>＋</span>Tạo phiếu nhập</a>
-            <a href="exports/index.php"><span>↗</span>Phiếu xuất kho</a>
-            <a href="exports/create.php"><span>＋</span>Tạo phiếu xuất</a>
-            <?php if ($_SESSION['role'] === 'Admin'): ?><div class="nav-label">HỆ THỐNG</div><a href="accounts/index.php"><span>♙</span>Tài khoản</a><?php endif; ?>
+            <a class="active" href="products/index.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#package"></use></svg></span>Hàng hóa</a>
+            <a href="imports/index.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#import"></use></svg></span>Phiếu nhập kho</a>
+            <a href="imports/create.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#file-plus"></use></svg></span>Tạo phiếu nhập</a>
+            <a href="exports/index.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#export"></use></svg></span>Phiếu xuất kho</a>
+            <a href="exports/create.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#file-plus"></use></svg></span>Tạo phiếu xuất</a>
+            <?php if ($_SESSION['role'] === 'Admin'): ?><div class="nav-label">HỆ THỐNG</div><a href="accounts/index.php"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#users"></use></svg></span>Tài khoản</a><?php endif; ?>
             <?php endif; ?>
         </nav>
-        <div class="sidebar-user"><span class="avatar"><?= detailEsc(mb_substr($_SESSION['full_name'] ?? 'N', 0, 1)) ?></span><span><strong><?= $name ?></strong><small><?= detailEsc($_SESSION['role']) ?></small></span><a href="auth/log-out.php" title="Đăng xuất" aria-label="Đăng xuất">⇥</a></div>
+        <div class="sidebar-user"><span class="avatar"><?= detailEsc(mb_substr($_SESSION['full_name'] ?? 'N', 0, 1)) ?></span><span><strong><?= $name ?></strong><small><?= detailEsc($_SESSION['role']) ?></small></span><a href="auth/log-out.php" title="Đăng xuất" aria-label="Đăng xuất"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#logout"></use></svg></a></div>
     </aside>
     <div class="content-shell">
-        <header class="topbar"><div class="topbar-left"><button class="menu-toggle" type="button" aria-controls="dashboard-sidebar" aria-expanded="false" aria-label="Mở menu">☰</button><div><span class="breadcrumb">Quản lý kho / Hàng hóa / Chi tiết</span><h1>Chi tiết hàng hóa</h1></div></div><div class="topbar-actions"><span><?= date('d/m/Y') ?></span><span class="top-avatar"><?= detailEsc(mb_substr($_SESSION['full_name'] ?? 'N', 0, 1)) ?></span></div></header>
-        <main class="main-content">
+        <header class="topbar"><div class="topbar-left"><button class="menu-toggle" type="button" aria-controls="dashboard-sidebar" aria-expanded="false" aria-label="Mở menu"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#menu"></use></svg></button><div><span class="breadcrumb">Quản lý kho / Hàng hóa / Chi tiết</span><h1>Chi tiết hàng hóa</h1></div></div><div class="topbar-actions"><span><?= date('d/m/Y') ?></span><span class="top-avatar"><?= detailEsc(mb_substr($_SESSION['full_name'] ?? 'N', 0, 1)) ?></span></div></header>
+        <main class="main-content" id="main-content" tabindex="-1">
             <?php if ($notFound): ?>
-                <div class="panel missing-product"><h2>Không tìm thấy hàng hóa</h2><p>Hàng hóa này có thể đã bị xóa hoặc đường dẫn không đúng.</p><a href="<?= $back ?>">← Quay lại</a></div>
+                <div class="panel missing-product"><h2>Không tìm thấy hàng hóa</h2><p>Hàng hóa này có thể đã bị xóa hoặc đường dẫn không đúng.</p><a href="<?= $back ?>"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#arrow-left"></use></svg> Quay lại</a></div>
             <?php else: ?>
                 <div class="detail-heading">
-                    <div><a class="back-link" href="<?= $back ?>">← <?= $canManage ? 'Danh sách hàng hóa' : 'Quay lại' ?></a><div class="heading-title"><span class="heading-icon">◫</span><div><span class="detail-eyebrow">HÀNG HÓA #<?= (int) $productId ?></span><h2><?= detailEsc($product['ten_san_pham']) ?></h2><span class="category-pill"><?= detailEsc($product['loai']) ?></span></div></div></div>
-                    <?php if ($canManage): ?><a class="edit-link" href="products/edit.php?id=<?= (int) $productId ?>">✎ Chỉnh sửa</a><?php endif; ?>
+                    <div><a class="back-link" href="<?= $back ?>"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#arrow-left"></use></svg> <?= $canManage ? 'Danh sách hàng hóa' : 'Quay lại' ?></a><div class="heading-title"><span class="heading-icon"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#package"></use></svg></span><div><span class="detail-eyebrow">HÀNG HÓA #<?= (int) $productId ?></span><h2><?= detailEsc($product['ten_san_pham']) ?></h2><span class="category-pill"><?= detailEsc($product['loai']) ?></span></div></div></div>
+                    <?php if ($canManage): ?><a class="edit-link" href="products/edit.php?id=<?= (int) $productId ?>"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#edit"></use></svg> Chỉnh sửa</a><?php endif; ?>
                 </div>
                 <section class="detail-metrics" aria-label="Số lượng hàng hóa">
-                    <article class="metric"><div class="metric-top"><span>Đã nhập</span><i class="blue">↙</i></div><strong><?= number_format($totalImport, 0, ',', '.') ?></strong><small><?= detailEsc($product['don_vi']) ?> · Theo phiếu nhập</small></article>
-                    <article class="metric"><div class="metric-top"><span>Đã xuất</span><i class="orange">↗</i></div><strong><?= number_format($totalExport, 0, ',', '.') ?></strong><small><?= detailEsc($product['don_vi']) ?> · Theo phiếu xuất</small></article>
-                    <article class="metric"><div class="metric-top"><span>Còn trong kho</span><i class="green">▣</i></div><strong><?= number_format((int) $product['so_luong_con_lai'], 0, ',', '.') ?></strong><small><?= detailEsc($product['don_vi']) ?> · Số tồn hiện tại</small></article>
+                    <article class="metric"><div class="metric-top"><span>Đã nhập</span><i class="blue"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#import"></use></svg></i></div><strong><?= number_format($totalImport, 0, ',', '.') ?></strong><small><?= detailEsc($product['don_vi']) ?> · Theo phiếu nhập</small></article>
+                    <article class="metric"><div class="metric-top"><span>Đã xuất</span><i class="orange"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#export"></use></svg></i></div><strong><?= number_format($totalExport, 0, ',', '.') ?></strong><small><?= detailEsc($product['don_vi']) ?> · Theo phiếu xuất</small></article>
+                    <article class="metric"><div class="metric-top"><span>Còn trong kho</span><i class="green"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#warehouse"></use></svg></i></div><strong><?= number_format((int) $product['so_luong_con_lai'], 0, ',', '.') ?></strong><small><?= detailEsc($product['don_vi']) ?> · Số tồn hiện tại</small></article>
                 </section>
                 <div class="detail-grid">
                     <section class="panel detail-info">
@@ -112,7 +115,7 @@ $name = detailEsc($_SESSION['full_name'] ?? $_SESSION['username'] ?? 'Người d
                         <?php if ($images): ?>
                             <button type="button" class="main-image" id="open-gallery" aria-label="Xem ảnh lớn"><img src="<?= detailEsc($images[0]['file_path']) ?>" alt="<?= detailEsc($images[0]['alt_text'] ?: $product['ten_san_pham']) ?>"></button>
                             <div class="image-thumbs"><?php foreach ($images as $index => $image): ?><button type="button" class="image-thumb <?= $index === 0 ? 'active' : '' ?>" data-index="<?= $index ?>" aria-label="Xem ảnh <?= $index + 1 ?>"><img src="<?= detailEsc($image['file_path']) ?>" alt="<?= detailEsc($image['alt_text'] ?: $product['ten_san_pham']) ?>" loading="lazy"></button><?php endforeach; ?></div>
-                        <?php else: ?><div class="no-image"><span>▧</span><p>Chưa có hình ảnh cho hàng hóa này.</p></div><?php endif; ?>
+                        <?php else: ?><div class="no-image"><span><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#image"></use></svg></span><p>Chưa có hình ảnh cho hàng hóa này.</p></div><?php endif; ?>
                     </section>
                 </div>
                 <div class="history-grid">
@@ -130,7 +133,7 @@ $name = detailEsc($_SESSION['full_name'] ?? $_SESSION['username'] ?? 'Người d
     </div>
 </div>
 <?php if (!$notFound && $images): ?>
-<dialog class="gallery-dialog" id="gallery-dialog" aria-label="Xem hình ảnh hàng hóa"><button type="button" class="gallery-close" id="close-gallery" aria-label="Đóng">×</button><img id="gallery-large-image" src="" alt=""><div class="gallery-controls"><button type="button" id="previous-image">← Trước</button><span id="gallery-counter"></span><button type="button" id="next-image">Tiếp →</button></div></dialog>
+<dialog class="gallery-dialog" id="gallery-dialog" aria-label="Xem hình ảnh hàng hóa"><button type="button" class="gallery-close" id="close-gallery" aria-label="Đóng"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#close"></use></svg></button><img id="gallery-large-image" src="" alt=""><div class="gallery-controls"><button type="button" id="previous-image"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#arrow-left"></use></svg> Trước</button><span id="gallery-counter"></span><button type="button" id="next-image">Tiếp <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#arrow-right"></use></svg></button></div></dialog>
 <?php endif; ?>
 <script>
 const menu = document.querySelector('.menu-toggle');
@@ -166,5 +169,6 @@ gallery.addEventListener('keydown', event => {
 });
 <?php endif; ?>
 </script>
+<script src="assets/js/shared/theme.js" defer></script>
 </body>
 </html>

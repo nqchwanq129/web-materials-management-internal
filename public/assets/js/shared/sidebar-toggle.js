@@ -7,7 +7,8 @@
     btn.id = 'sidebarToggle';
     btn.className = 'sidebar-toggle';
     btn.type = 'button';
-    btn.textContent = '☰';
+    btn.innerHTML = '<svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#menu"></use></svg>';
+    btn.setAttribute('aria-label', 'Ẩn hoặc hiện menu');
     document.body.appendChild(btn);
   }
   btn.onclick = function(){

@@ -2,6 +2,8 @@
 chdir(dirname(__DIR__));
 session_start();
 require_once __DIR__ . '/../../app/config/database.php';
+require_once __DIR__ . '/../../app/helpers/csrf_helper.php';
+header('Content-Type: application/json; charset=utf-8');
 
 // Kiểm tra quyền truy cập
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['role'] !== 'Thủ kho')) {
@@ -17,7 +19,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$export_bill_id = $_POST['id'] ?? '';
+if (!is_string($_POST['csrf_token'] ?? null) || !validateCSRFToken($_POST['csrf_token'])) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'Phiên làm việc đã hết hạn. Vui lòng tải lại trang rồi thử lại.']);
+    exit;
+}
+
+$export_bill_id = filter_var($_POST['id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 if (empty($export_bill_id)) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => 'ID hóa đơn không hợp lệ']);
@@ -58,6 +66,6 @@ try {
     $pdo->rollBack();
     error_log('Lỗi thu hồi hóa đơn xuất: ' . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Có lỗi xảy ra khi thu hồi: ' . $e->getMessage()]);
+    echo json_encode(['success' => false, 'message' => 'Chưa thể thu hồi phiếu xuất. Vui lòng thử lại.']);
 }
 ?>

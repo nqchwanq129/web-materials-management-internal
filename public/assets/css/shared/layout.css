@@ -71,7 +71,7 @@ table, th, td {
 }
 
 .logout-btn {
-    background: #667eea;
+    background: #8a78d8;
     color: white;
     border: none;
     padding: 8px 16px;
@@ -82,7 +82,7 @@ table, th, td {
 }
 
 .logout-btn:hover {
-    background: #5a6fd8;
+    background: #7c6cc6;
 }
 
 .container {
@@ -90,7 +90,7 @@ table, th, td {
 }
 .sidebar {
     width: var(--sidebar-width);
-    background: #f5f6fa;
+    background: #f6f6f9;
     padding: 0;
     border-right: 1px solid #e0e0e0;
     position: fixed;
@@ -106,14 +106,14 @@ table, th, td {
     bottom: 12px; /* đặt ở dưới cùng như yêu cầu */
     left: 12px;
     z-index: 1100;
-    background: #667eea;
+    background: #8a78d8;
     color: #fff;
     border: none;
     border-radius: 4px;
     padding: 6px 10px;
     cursor: pointer;
 }
-.sidebar-toggle:hover { background: #5a6fd8; }
+.sidebar-toggle:hover { background: #7c6cc6; }
 
 /* Trạng thái thu gọn */
 /* Đã tắt chức năng thu gọn sidebar theo yêu cầu */
@@ -147,7 +147,7 @@ table, th, td {
     text-decoration: none;
 }
 .menu > li > a:hover, .menu > li > ul > li > a:hover {
-    color: #2d6cdf;
+    color: #5d46c6;
 }
 
 /* Bỏ hiệu ứng bôi xanh cho các mục active */
@@ -235,13 +235,13 @@ input[type="number"].currency-input {
 }
 
 .btn-primary {
-    background: #007bff;
+    background: #5339c6;
     color: #fff;
     box-shadow: 0 2px 6px rgba(0,123,255,.35);
 }
 
 .btn-primary:hover {
-    background: #0056b3;
+    background: #3a288b;
 }
 
 .btn-success {
@@ -266,11 +266,11 @@ input[type="number"].currency-input {
 
 /* Filter section styles */
 .filter-section {
-    background: #f8f9fa;
+    background: #f9f8fa;
     padding: 15px;
     border-radius: 8px;
     margin-bottom: 20px;
-    border: 1px solid #e9ecef;
+    border: 1px solid #ebeaee;
 }
 
 .filter-section form {
@@ -282,7 +282,7 @@ input[type="number"].currency-input {
 
 .filter-section label {
     font-weight: 600;
-    color: #495057;
+    color: #4d4b55;
     margin: 0;
 }
 
@@ -297,7 +297,7 @@ input[type="number"].currency-input {
 .filter-section input[type="date"]:focus,
 .filter-section .date-picker:focus {
     outline: none;
-    border-color: #007bff;
+    border-color: #5339c6;
     box-shadow: 0 0 0 2px rgba(0,123,255,.25);
 }
 
@@ -308,13 +308,13 @@ input[type="number"].currency-input {
     font-family: inherit;
 }
 .flatpickr-day.today {
-    border-color: #007bff;
+    border-color: #5339c6;
 }
 .flatpickr-day.selected,
 .flatpickr-day.startRange,
 .flatpickr-day.endRange {
-    background: #007bff;
-    border-color: #007bff;
+    background: #5339c6;
+    border-color: #5339c6;
 }
 
 .btn-secondary {

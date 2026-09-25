@@ -13,9 +13,11 @@ $error = $messages[$_GET['error'] ?? ''] ?? null;
     <base href="../">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#f4f7fb">
+    <meta name="theme-color" content="#f6f5fa">
     <title>Đăng nhập | Quản lý vật tư VISHIPEL</title>
     <link rel="stylesheet" href="assets/css/auth/sign-in.css">
+    <link rel="stylesheet" href="assets/css/shared/icons.css">
+    <link rel="stylesheet" href="assets/css/shared/theme.css">
 </head>
 <body>
 <main class="page-shell">
@@ -29,7 +31,7 @@ $error = $messages[$_GET['error'] ?? ''] ?? null;
         <div class="scene" aria-hidden="true">
             <div class="scene-orbit orbit-one"></div><div class="scene-orbit orbit-two"></div>
             <div class="scene-card card-back"><i></i><i></i><i></i></div>
-            <div class="scene-card card-front"><b>✓</b><i></i><i></i><i></i></div>
+            <div class="scene-card card-front"><b><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#check"></use></svg></b><i></i><i></i><i></i></div>
             <div class="scene-box box-one"></div><div class="scene-box box-two"></div>
         </div>
         <div class="panel-footer">VISHIPEL · Quản lý vật tư</div>
@@ -38,7 +40,7 @@ $error = $messages[$_GET['error'] ?? ''] ?? null;
         <div class="mobile-brand"><img src="assets/images/company-logo.png" alt="VISHIPEL"></div>
         <div class="form-wrap">
             <div class="form-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M8 8V6a4 4 0 0 1 8 0v2M8 13h8M8 16h5"/></svg>
+                <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#package"></use></svg>
             </div>
             <p class="form-kicker">CHÀO MỪNG TRỞ LẠI</p>
             <h2 id="sign-in-title">Đăng nhập</h2>
@@ -50,21 +52,21 @@ $error = $messages[$_GET['error'] ?? ''] ?? null;
                 <div class="form-group">
                     <label for="username">Tên đăng nhập</label>
                     <div class="input-wrap">
-                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+                        <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#user"></use></svg>
                         <input type="text" id="username" name="username" placeholder="Nhập tên đăng nhập" autocomplete="username" spellcheck="false" required autofocus>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="password">Mật khẩu</label>
                     <div class="input-wrap">
-                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+                        <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#lock"></use></svg>
                         <input type="password" id="password" name="password" placeholder="Nhập mật khẩu" autocomplete="current-password" required>
                         <button type="button" class="password-toggle" aria-label="Hiện mật khẩu" aria-pressed="false" aria-controls="password" title="Hiện mật khẩu">
-                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2.5 12s3.5-5 9.5-5 9.5 5 9.5 5-3.5 5-9.5 5-9.5-5-9.5-5Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+                            <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#eye"></use></svg>
                         </button>
                     </div>
                 </div>
-                <button class="login-btn" type="submit">Đăng nhập <span aria-hidden="true">→</span></button>
+                <button class="login-btn" type="submit">Đăng nhập <span aria-hidden="true"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="assets/icons.svg#arrow-right"></use></svg></span></button>
             </form>
             <p class="support-note">Bạn gặp khó khăn khi đăng nhập?<br>Liên hệ quản trị viên để được hỗ trợ.</p>
         </div>
